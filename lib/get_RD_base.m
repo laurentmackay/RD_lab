@@ -3,7 +3,7 @@ global RD_base
 
 if isempty(RD_base)
     p=mfilename('fullpath');
-    RD_base = regexprep(p,[ '[^\' filesep ']+$'],'');
+    RD_base = regexprep(p,[  '[^\' filesep ']+\' filesep '[^\' filesep ']+$'],'');
 end
 
 base=RD_base;
