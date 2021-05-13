@@ -1,0 +1,28 @@
+{} <-> Ru; k4r*R0*in_cell, k4r;
+Ru + L <-> Rb; k1r, k2r;
+
+{} <-> Du; kdr*D0, k4d;
+Du + L <-> Db; kdr, kdr;
+
+
+
+param *=1
+param a=0.1, P=0.15, c=1
+
+da/dt = c*(Rb_front-Rb_rear)
+
+
+L(0)=1
+Ru(0)=Rb(0)=0
+Du(0)=Db(0)=0
+
+D(L)=1
+
+in_cell = x>=a & x<=(a+P)
+front = x>=a+P/2 & x<=a+P
+rear = x>=a & x<a+P/2 
+Rb_rear = trapz(x(rear),Rb(rear))
+Rb_front = trapz(x(front),Rb(front))
+
+
+V(Db)=V(Du)=V(Db)=V(Du)=c*(Rb_front-Rb_rear)
