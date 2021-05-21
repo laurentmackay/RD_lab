@@ -31,7 +31,7 @@ end
 
 
 hash_file = strcat(work_dir,filesep,'model.hash');
-hash = dir(strcat(RD_base,'models',filesep,f)).date;
+hash = datestr(dir(strcat(RD_base,'models',filesep,f)).date,2);
 %check the model-description hash to see if it has changed
 if force || isempty(dir(hash_file)) || strcmp(fileread(hash_file), hash)
     
