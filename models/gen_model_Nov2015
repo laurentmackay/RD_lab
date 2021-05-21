@@ -7,22 +7,23 @@ Du + L <-> Db; kdr, kdr;
 
 
 param *=1
-param a=0.1, P=0.15, c=1
+param P=0.15, c=1, gamma_L=1, Q=1
 
-da/dt = c*(Rb_front-Rb_rear)
+da/dt = v_cell
 
 
 L(0)=1
 Ru(0)=Rb(0)=0
 Du(0)=Db(0)=0
+a(0)=0.1
 
-D(L)=1
+D(L)=gamma_L
 
 in_cell = x>=a & x<=(a+P)
 front = x>=a+P/2 & x<=a+P
 rear = x>=a & x<a+P/2 
 Rb_rear = trapz(x(rear),Rb(rear))
 Rb_front = trapz(x(front),Rb(front))
+v_cell = c*(Rb_front-Rb_rear)
 
-
-V(Db)=V(Du)=V(Db)=V(Du)=c*(Rb_front-Rb_rear)
+V(Db)=V(Du)=V(Rb)=V(Ru)=v_cell

@@ -1,4 +1,4 @@
-N=1e4;
+N=1e3;
 dt=0.1;
 Q=1;
 t_plot=1;
@@ -31,11 +31,14 @@ last_plot=-inf;
 dudt_adv=sparse(sz,sz);
 
 u_for = sparse(1:sz , jump(:,1)',1);
-u_for(end,:)=0;
-u_for(end,end)=1;
+% u_for(end,:)=0;
+% u_for(end,end)=1;
 u_back = sparse(1:sz , jump(:,2)',1);
-u_back(1,:)=0;
+% u_back(1,:)=0;
+u_x = (u_for-u_back)/h;
+
 eye = speye(sz);
+u_xx = (u_back-2*eye+u_for)/(h^2)
 % u_x_for=(u_for-eye)/h;
 % u_x_for(end,:)=u_x_for(end-1,:);
 % 
@@ -74,6 +77,7 @@ while t<1e3 && a+P<Q
     
     eval_model
     eval_aux_model
+    
     eval_model_implicit
     
     
@@ -84,6 +88,7 @@ while t<1e3 && a+P<Q
 
 
     dt=min(CFL_max*h/abs(v), dt0);
+%     dt=dt0;
 %     nu_for=v*dt/h
     for i_ = find(sign(V_prev)~=sign(V))
         f0_star = (f0_for+f0)/2-(sign(V(i_)).*(f0_for-f0))/2;
@@ -110,15 +115,9 @@ while t<1e3 && a+P<Q
     Rx_star = (1+sign(V)).*Rx_tilde(jump(:,2),:)/2 ...
              + (1-sign(V)).*Rx_tilde/2;
          for i_=1:N_species
-             if V(i_)~=0
-                 if D(i_)==0
-                    u(:,i_)=u(:,i_)+dudt0_adv{i_}*u(:,i_)*(V(i_)*dt)+Rx_star(:,i_)*dt;
-                 else
-                     u(:,i_)=u(:,i_)+u_xx*u(:,i_)*(D(i_)*dt)+Rx_star(:,i_)*dt;
-                 end
-             else
-                 u(:,i_)=u(:,i_)+u_xx*u(:,i_)*(D(i_)*dt)+Rx_star(:,i_)*dt;
-             end
+
+        	u(:,i_)=(eye+u_x*(V(i_)*dt))\(u(:,i_)+Rx_star(:,i_)*dt);
+
          end
     
          if any(V<0) && t>15
@@ -139,8 +138,8 @@ while t<1e3 && a+P<Q
     end
     t=t+dt;
     in_cell_prev=in_cell;
-    
-%     a=a+(v)*dt;
     u_aux=u_aux+f_aux*dt;
+%     a=a+(v)*dt;
+    
     V_prev=V;
 end

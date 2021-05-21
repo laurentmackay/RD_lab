@@ -16,11 +16,10 @@ h=(x(end)-x(1))/(N-1);
 jump=[circshift(i,-1) circshift(i,1)];
 
 
-model_params
 initialize_chem
-eval_model
-
 u=u0;
+u_aux=0.1
+
 
 
 
@@ -51,10 +50,11 @@ u_x_back(1,:)=u_x_back(2,:);
     f0_for = f0_for_adv;
     f0=f0_adv;
     
-    eval_model_implicit
-     v=c*(Rb_front-Rb_rear);
-    v_prev=v;
-    in_cell_prev=in_cell;
+model_params
+
+eval_model
+eval_model_implicit
+eval_aux_model
     
     f0_star = (f0_for+f0)/2-(sign(v_prev).*(f0_for-f0))/2;
     
@@ -64,45 +64,21 @@ dt0=dt;
 while t<1e3 && a+P<Q
     
     eval_model_implicit
+    eval_aux_model
     
-    
-    v=c*(Rb_front-Rb_rear);
-    
-%     ibad=find(in_cell_prev & ~in_cell );
-    
-    
-%     v=0.01;
-%     if ~isempty(ibad)
-%         
-%         if length(ibad)>1
-%             error('unexpeted complication')
-%         end
-%         if v_prev>0
-%             u(in_cell,:)=u(in_cell,:)+u(ibad,:)/nnz(in_cell);
-%             
-%         else
-%             u(in_cell,:)=u(in_cell,:)+u(ibad,:)/nnz(in_cell);
-%         end
-%         u(ibad,:)=0;
-%     end
-    dt=min(CFL_max*h/abs(v), dt0)
-    nu_for=v*dt/h
+    v=v_cell;
+
+
+
+    dt=min(CFL_max*h/abs(v), dt0);
+    nu_for=v*dt/h;
     if sign(v) ~=sign(v_prev) || t==0
         f0_star = (f0_for+f0)/2-(sign(v).*(f0_for-f0))/2;
-%                 f0_star = (f0_for+f0)/2-(sign(v)*(1-(1-abs(nu_for)))*(f0_for-f0))/2;
-        if v>0
-            du_UW=u_back;
-        else
-            du_UW=u_for;
-        end
-
-        
-%         dudt0_adv=-(f0_star - f0_star(jump(:,2),:))/(h);
     end
     
     f1_star=f0_star;
-    ib=find(in_cell,1)-1;
-    ifr=find(in_cell,1,'last');
+%     ib=find(in_cell,1)-1;
+%     ifr=find(in_cell,1,'last');
 %     f1_star(ib,:)=0;
 %     f1_star(ifr,:)=0;
 %     
@@ -113,24 +89,25 @@ while t<1e3 && a+P<Q
 %     
     eval_Rx
     Rx(:,2)=Rx(:,2)+exp(-((x-Q/2).^2)/(0.1)^2);
-%     u(:,2)=x;
+
     Rx_tilde = (Rx(jump(:,1),:)+Rx)/2;
     Rx_star = (1+sign(v))*Rx_tilde(jump(:,2),:)/2 ...
              + (1-sign(v))*Rx_tilde/2;
     u=u+dudt0_adv*u*(v*dt)+Rx_star*dt;
     if t-last_plot>=t_plot
-        inds=[1 3];
+        inds=[1 2 3];
         hplot=plot(x,u(:,inds));
         legend(hplot,chems{inds})
         xline(a);
         xline(a+P);
         drawnow
-        [find(in_cell,1)-1 u(find(in_cell,1)-1,1)]
+
         last_plot=t;
     end
     t=t+dt;
     in_cell_prev=in_cell;
     
-    a=a+(v)*dt;
+%     a=a+(v)*dt;
+    u_aux=u_aux+f_aux*dt;
     v_prev=v;
 end

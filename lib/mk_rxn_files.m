@@ -32,7 +32,15 @@ lcon=rref(lcon')';
 
 init=getInitialConditions(f,chems);
 
+[aux_vars,aux_dyn]=getAuxSystem(f);
 
+init_aux=getInitialConditions(f,aux_vars);
+if any(ismissing(init_aux))
+    error(['Please specify initial conditions for the following auxiliary variables: ' strjoin(aux_vars(ismissing(init_aux)))])
+end
+
+
+aux_ref=nameref(aux_vars);
 
 vars=getInitialized(f,true);
 chems=regexprep(chems,':','');
@@ -139,7 +147,7 @@ lcon_user = cell2mat(lcon_user(is_valid_consrv));
 
 
 if ~isempty(model_defs)
-    model_split = regexp(model_defs,[name '[ \t\f]*=([^=]+)'],'tokens');
+    model_split = regexp(model_defs,[name '[ \t\f]*=(.+)$'],'tokens');
     model_split=[model_split{:}];
     model_pars = cellfun(@(x) x{2}, model_split, 'UniformOutput', false);
     model_pars = regexp(model_pars,name,'tokens');
@@ -681,9 +689,25 @@ end
 
 if nnz(missing_init)>0
     
-    consrv_eqns_init =  subs(consrv_eqns,str2sym([chems(~missing_init) chems(N_slow+1:end) ]),str2sym([slow_init_reps(~missing_init) fast_init_reps']));
-    init_sol = solve(subs(consrv_eqns_init(any(consrv_deps_missing,2)),str2sym(model_pars_tot),str2sym(model_par_vals_tot)),str2sym(chems(missing_init)));
+    if nnz(missing_init)>size(consrv_eqns,1) || ~all(any(consrv_deps_missing,1))
+
+        error(['Undetermined system of initial conditions:' newline int2str(nnz(missing_init)) ' unspecified initial condition(s), with only ' int2str(nnz(any(consrv_deps_missing,1))) ' relevant conservation equation(s) detected and ' int2str(nnz(~missing_init)) ' initial conditions provided.'])
+    end
     
+    consrv_eqns_init =  subs(consrv_eqns,str2sym([chems(~missing_init) chems(N_slow+1:end) ]),str2sym([slow_init_reps(~missing_init) fast_init_reps']));
+    consrv_eqns_init = subs(consrv_eqns_init(any(consrv_deps_missing,2)),str2sym(model_pars_tot),str2sym(model_par_vals_tot));
+%     init_sol=cell2sym(cell(1,nnz(missing_init)));
+    chems_missing_init = str2sym(chems(missing_init));
+%     for i_=1:length(chems_missing_init)
+%         init_sol(i_) = solve(consrv_eqns_init,chems_missing_init(i_));
+%         if ~isempty(init_sol(i_))
+%             consrv_eqns_init = subs(consrv_eqns_init,chems_missing_init(i_), init_sol(i_))
+%         else
+%             error(['Could not determine an intial condition for the following species:' sym2str(chems_missing_init(i_))])
+%         end
+%     end
+    
+    init_sol =  solve(consrv_eqns_init,chems_missing_init);
     if nnz(missing_init)>1
         init_sol=cell2sym(struct2cell(init_sol));
     end
@@ -698,6 +722,7 @@ if nnz(missing_init)>0
         error(['Please specify some initial condtions for following species: ' strjoin(chems(ismissing(init(~is_fast))),', ')])
     end
     
+
 end
 
 
@@ -1208,7 +1233,19 @@ fclose(fid);
 
 clear eval_Rx
 
+V=getTransportVelocity(f0,chems);
+model_vars_implicit = regexprep(model_defs_implicit,'^[ \t\f]*([^= \t\f]+)[ \t\f]*=.+$','$1');
+implicit_refs=nameref([model_pars_implicit model_vars_implicit]);
+V_contains_implicit = cellfun(@(def) regexp(def,implicit_refs),V,'UniformOutput',false);
+V_contains_implicit = cellfun(@(x)any(cellfun(@(y) ~isempty(y),x)),V_contains_implicit);
+
+
 chem_rep_FVM=arrayfun(@(i) ['$<pre>u\(:,' num2str(i) '\)$<post>'],1:length(chems),'UniformOutput',0);
+if ~isempty(aux_vars)
+    aux_rep=arrayfun(@(i) ['u_aux\(' num2str(i) '\)'],1:length(aux_vars),'UniformOutput',0);
+else
+    aux_rep={};
+end
 ref2=@(x) ['(?<pre>[' code '\n]|^)(?<var>' x ')(?<addr>\([^\n\)]\)|)(?<post>[' code '\n]|$)'];
 chem_ref2=cellfun(@(x) ref(x),chems,'UniformOutput',0);
 
@@ -1218,7 +1255,13 @@ if ~isempty(model_defs_implicit)
 else
     model_body_implicit='';
 end
+
+if any(V_contains_implicit)
+    model_body_implicit = [ model_body_implicit newline  newline 'V=[' strjoin(V) '];'];
+end
+
 model_body_implicit = regexprep(model_body_implicit,chem_ref ,chem_rep_FVM);% reshape the chemical names
+model_body_implicit = regexprep(model_body_implicit,aux_ref ,aux_rep);
 addr_ref=arrayfun(@(i) ['u\(:,' int2str(i) '\)\('],1:length(chems),'UniformOutput',0);
 
 addr_start = regexp(model_body_implicit,addr_ref,'start');
@@ -1246,10 +1289,18 @@ model_body_implicit = elementwise_operations(model_body_implicit);
 fid=fopen(strcat(save_dir,filesep,'eval_model_implicit.m'),'w');
 fwrite(fid,model_body_implicit,'char');
 fclose(fid);
-clear eval_model
+clear eval_model_implicit
 
 
+f_aux = regexprep(aux_dyn,aux_ref ,aux_rep);
 
+
+fid=fopen(strcat(save_dir,filesep,'eval_aux_model.m'),'w');
+aux_body=[strjoin(strcat(aux_vars,'=',regexprep(aux_rep,'\','')), [';' newline]) [';' newline] newline 'f_aux=[' strjoin(f_aux,[',...' newline]) '];'];
+
+fwrite(fid,aux_body,'char');
+fclose(fid);
+clear eval_aux_model
 
 
 
@@ -1295,8 +1346,17 @@ if ~isempty(model_defs)
 else
     model_body='';
 end
+
+if ~any(V_contains_implicit)
+    model_body = [ model_body newline  newline 'V=[' strjoin(V) '];'];
+end
+
+
+
+
 chem_rep_full=arrayfun(@(i) ['$<pre>x\(:,:,' num2str(i) '\)$<post>'],1:length(chems),'UniformOutput',0);%this only works for 2d
 model_body = regexprep(model_body,chem_ref ,chem_rep_full);% reshape the chemical names
+model_body = regexprep(model_body,aux_ref ,aux_rep);
 model_body = elementwise_operations(model_body);
 fid=fopen(strcat(save_dir,filesep,'eval_model.m'),'w');
 fwrite(fid,model_body,'char');
@@ -1549,7 +1609,7 @@ if self_contained
     fprintf(['Integrating to find fixed point (abstol = ' num2str(tol) ')...']);
     t0=tic();
     T_vec=0;
-    while ~all(abs(rhs_fun(0,ic_ode'))<tol)
+    while ~all(abs(rhs_fun(0,ic_ode'))<tol) && T_vec(end)<2e4
         [T_vec,Y_vec] = ode15s(@ rhs_fun,T_vec(end)+[0 1e3],ic_ode,odeset('NonNegative',1:length(ic_ode)));
         ic_ode = Y_vec(end,:);
     end

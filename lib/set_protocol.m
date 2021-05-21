@@ -7,7 +7,7 @@ end
 
 if exist(strcat(RD_base,'protocols',filesep, nm),'file')
     if ~isempty(protocol)
-        rmpath(strcat(RD_base,'protocols',filesep, nm));
+        rmpath(strcat(RD_base,'protocols',filesep, protocol));
     end
     protocol=nm;
     addpath(strcat(RD_base,'protocols',filesep, nm));

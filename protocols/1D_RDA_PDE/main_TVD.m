@@ -1,7 +1,7 @@
 N=1e3;
 dt=0.001;
 Q=1;
-t_plot=100*dt;
+t_plot=1;
 
 
 
@@ -84,7 +84,7 @@ while t<1e3 && a+P<Q
 %         end
 %         u(ibad,:)=0;
 %     end
-    nu_for=v*dt/h;
+    nu_for=v*h/dt;
     CFL=v*dt/h
     if sign(v) ~=sign(v_prev) || t==0
         f0_star_UW = (f0_for+f0)/2-(sign(v).*(f0_for-f0))/2;

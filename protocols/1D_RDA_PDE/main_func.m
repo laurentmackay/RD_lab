@@ -17,20 +17,9 @@ h=(x(end)-x(1))/(N-1);
 jump=[circshift(i,-1) circshift(i,1)];
 
 
-k4r=1.000000000;
-R0=1.000000000;
-k1r=1.000000000;
-k2r=1.000000000;
-kdr=1.000000000;
-D0=1.000000000;
-k4d=1.000000000;
-a=0.1;
-P=0.15;
-c=1;
-cnsrv_1=1;
 N_species = 5;
 N_rx = 8;
-D = [0  1  0  0  0];
+D = [0  0  0  0  0];
 N_slow = 5;
 chems={'Ru','L','Rb','Du','Db'};
 
@@ -41,8 +30,9 @@ chems={'Ru','L','Rb','Du','Db'};
 ic = [0 1 0 0 0];
 u0=repmat(ic,[sz,1]);
 
-
 u=u0;
+u_aux=0.1
+
 
 
 
@@ -73,47 +63,59 @@ u_x_back(1,:)=u_x_back(2,:);
     f0_for = f0_for_adv;
     f0=f0_adv;
     
-    in_cell = x>=a & x<=(a+P);
-front = x>=a+P./2 & x<=a+P;
-rear = x>=a & x<a+P./2 ;
+P=0.150000000;
+c=1.000000000;
+k4r=1.000000000;
+R0=1.000000000;
+k1r=1.000000000;
+k2r=1.000000000;
+kdr=1.000000000;
+D0=1.000000000;
+k4d=1.000000000;
+gamma_L=1;
+Q=1;
+cnsrv_1=1;
+
+in_cell = x>=u_aux(1) & x<=(u_aux(1)+P);
+front = x>=u_aux(1)+P./2 & x<=u_aux(1)+P;
+rear = x>=u_aux(1) & x<u_aux(1)+P./2 ;
 Rb_rear = trapz(x(rear),u(rear,3));
 Rb_front = trapz(x(front),u(front,3));
-v=c*(Rb_front-Rb_rear);
-    v_prev=v;
-    in_cell_prev=in_cell;
-    
-    f0_star = (f0_for+f0)/2-(sign(v_prev).*(f0_for-f0))/2;
+v_cell = c.*(Rb_front-Rb_rear);
+
+V=[v_cell 0 v_cell v_cell v_cell];
+a=u_aux(1);
+
+f_aux=[v_cell];
+f0_star = (f0_for+f0)/2-(sign(v_prev).*(f0_for-f0))/2;
     
 CFL_max=0.8;
 dt0=dt;
 
 while t<1e3 && a+P<Q
     
-    in_cell = x>=a & x<=(a+P);
-front = x>=a+P./2 & x<=a+P;
-rear = x>=a & x<a+P./2 ;
+    in_cell = x>=u_aux(1) & x<=(u_aux(1)+P);
+front = x>=u_aux(1)+P./2 & x<=u_aux(1)+P;
+rear = x>=u_aux(1) & x<u_aux(1)+P./2 ;
 Rb_rear = trapz(x(rear),u(rear,3));
 Rb_front = trapz(x(front),u(front,3));
-v=c*(Rb_front-Rb_rear);
-    
-    
-    
-    dt=min(CFL_max*h/abs(v), dt0)
-    nu_for=v*dt/h
+v_cell = c.*(Rb_front-Rb_rear);
+
+V=[v_cell 0 v_cell v_cell v_cell];
+a=u_aux(1);
+
+f_aux=[v_cell];
+v=v_cell;
+
+
+
+    dt=min(CFL_max*h/abs(v), dt0);
+    nu_for=v*dt/h;
     if sign(v) ~=sign(v_prev) || t==0
         f0_star = (f0_for+f0)/2-(sign(v).*(f0_for-f0))/2;
-        if v>0
-            du_UW=u_back;
-        else
-            du_UW=u_for;
-        end
-
-        
     end
     
     f1_star=f0_star;
-    ib=find(in_cell,1)-1;
-    ifr=find(in_cell,1,'last');
     dudt0_adv=-(f1_star - f1_star(jump(:,2),:))/(h);
     f_Ru =  (k4r.*R0.*in_cell)-(k4r.*u(:,1))-(k1r.*u(:,1).*u(:,2))+ (k2r.*u(:,3));
 f_L = -(k1r.*u(:,1).*u(:,2))+ (k2r.*u(:,3))-(kdr.*u(:,2).*u(:,4))+ (kdr.*u(:,5));
@@ -126,6 +128,7 @@ f_Rb,...
 f_Du,...
 - f_L - f_Rb];
 Rx(:,2)=Rx(:,2)+exp(-((x-Q/2).^2)/(0.1)^2);
+
     Rx_tilde = (Rx(jump(:,1),:)+Rx)/2;
     Rx_star = (1+sign(v))*Rx_tilde(jump(:,2),:)/2 ...
              + (1-sign(v))*Rx_tilde/2;
@@ -137,13 +140,13 @@ Rx(:,2)=Rx(:,2)+exp(-((x-Q/2).^2)/(0.1)^2);
         xline(a);
         xline(a+P);
         drawnow
-        [find(in_cell,1)-1 u(find(in_cell,1)-1,1)]
+
         last_plot=t;
     end
     t=t+dt;
     in_cell_prev=in_cell;
     
-    a=a+(v)*dt;
+    u_aux=u_aux+f_aux*dt;
     v_prev=v;
 end
 

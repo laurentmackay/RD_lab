@@ -1,9 +1,9 @@
-N=1e4;
-dt=0.1;
-Q=1;
-t_plot=1;
+N=1e3;
+dt=1;
 
+t_plot=5;
 
+model_params
 
 
 
@@ -31,11 +31,14 @@ last_plot=-inf;
 dudt_adv=sparse(sz,sz);
 
 u_for = sparse(1:sz , jump(:,1)',1);
-u_for(end,:)=0;
-u_for(end,end)=1;
+% u_for(end,:)=0;
+% u_for(end,end)=1;
 u_back = sparse(1:sz , jump(:,2)',1);
-u_back(1,:)=0;
+% u_back(1,:)=0;
+u_x = (u_for-u_back)/(2*h);
+
 eye = speye(sz);
+u_xx = (u_back-2*eye+u_for)/(h^2);
 % u_x_for=(u_for-eye)/h;
 % u_x_for(end,:)=u_x_for(end-1,:);
 % 
@@ -66,29 +69,31 @@ for i_ = 1:length(V)
         f0_star = (f0_for+f0)/2-(sign(V(i_)).*(f0_for-f0))/2;
         dudt0_adv{i_}=-(f0_star - f0_star(jump(:,2),:))/h;
 end
-    
-CFL_max=0.8;
+rel_tol=0.05;  
+CFL_max=rel_tol;
 dt0=dt;
 
 while t<1e3 && a+P<Q
     
     eval_model
     eval_aux_model
+    
     eval_model_implicit
     
     
     
 %     v=v_cell;
 
-    v=max(V);
+    v=max(abs(V));
 
 
-    dt=min(CFL_max*h/abs(v), dt0);
+    dt=min(CFL_max*h/abs(v), dt0)
+%     dt=dt0;
 %     nu_for=v*dt/h
     for i_ = find(sign(V_prev)~=sign(V))
         f0_star = (f0_for+f0)/2-(sign(V(i_)).*(f0_for-f0))/2;
         f0_star_back = f0_star(jump(:,2),:);
-        f0_star_back(1,:)=f0_star_back(2,:);
+%         f0_star_back(1,:)=f0_star_back(2,:);
         dudt0_adv{i_}=-(f0_star - f0_star_back)/h;
     end
     
@@ -104,29 +109,47 @@ while t<1e3 && a+P<Q
 %     dudt0_adv=-(f1_star - f1_star(jump(:,2),:))/(h);
 %     
     eval_Rx
+    
     Rx(:,2)=Rx(:,2)+exp(-((x-Q/2).^2)/(0.1)^2);
 
     Rx_tilde = (Rx(jump(:,1),:)+Rx)/2;
     Rx_star = (1+sign(V)).*Rx_tilde(jump(:,2),:)/2 ...
              + (1-sign(V)).*Rx_tilde/2;
+    Rx_star=Rx;
+%      figure(2);plot(Rx_star)
+%     if any(V<0) && t>15
+%     disp('reversing')
+%     dt=dt0/100;
+%     t_plot=dt;
+%     end
+     if t==0
+     Rx_prev=Rx_star;
+     u_prev=u;
+     
+     end
+     dt=max(min(2*rel_tol/max(abs(Rx_star(:)+Rx_prev(:))./(u(:)+1e-12)),dt),1e-6)
+         b_=(4*u-u_prev) + 2*dt*(2*Rx_star-Rx_prev);
+%          A_mat = arrayfun(@(Di)( eye*3/(2*dt)-Di*u_xx),D,'UniformOutput',0);
          for i_=1:N_species
-             if V(i_)~=0
-                 if D(i_)==0
-                    u(:,i_)=u(:,i_)+dudt0_adv{i_}*u(:,i_)*(V(i_)*dt)+Rx_star(:,i_)*dt;
-                 else
-                     u(:,i_)=u(:,i_)+u_xx*u(:,i_)*(D(i_)*dt)+Rx_star(:,i_)*dt;
-                 end
-             else
-                 u(:,i_)=u(:,i_)+u_xx*u(:,i_)*(D(i_)*dt)+Rx_star(:,i_)*dt;
-             end
+            if D(i_)==0
+%                  A_ = -u_x*(V(i_))*dt;
+                 A_ = dudt0_adv{i_}*(V(i_)*dt);
+% 
+%                  A_1 = -u_x*(V(i_))*dt;
+%                  A_2 = dudt0_adv{i_}*(V(i_)*dt);
+%                  A_ =(A_1+A_2)/2;
+
+            else
+                A_ = D(i_)*u_xx*dt;
+            end
+        	u(:,i_)=(eye*3-2*A_)\b_(:,i_);
+%             u(:,i_)=u(:,i_)+A_*u(:,i_)+Rx(:,i_)*dt;
+
          end
-    
-         if any(V<0) && t>15
-            disp('reversing')
-            dt=dt0/100;
-            t_plot=dt;
-         end
+        Rx_prev=Rx_star;
+
     if t-last_plot>=t_plot
+        figure(1)
         inds=[1 3];
         inds=1:N_species;
         hplot=plot(x,u(:,inds));
@@ -139,8 +162,9 @@ while t<1e3 && a+P<Q
     end
     t=t+dt;
     in_cell_prev=in_cell;
-    
-%     a=a+(v)*dt;
     u_aux=u_aux+f_aux*dt;
+%     a=a+(v)*dt;
+    
     V_prev=V;
+    u_prev=u;
 end
