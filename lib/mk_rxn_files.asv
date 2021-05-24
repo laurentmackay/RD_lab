@@ -630,11 +630,8 @@ eval(strcat(' assume([', strjoin(chems), "]>0)"));
 
 
 ec0=subs(consrv_eqns_elim,str2sym(elim_fast),cell2sym(sol_fast));
-if ~isempty(consrv_eqns_elim)
-    sol_consrv=eval(['solve( subs(ec0),[' strjoin(elim_con,' ')  '])']);
-else
-    sol_consrv=struct();
-end
+if
+sol_consrv=eval(['solve( subs(ec0),[' strjoin(elim_con,' ')  '])']);
 if length(elim_con)==1
     %     elim_defs =  strcat(elim_con{1},'=',string(sol_consrv));
     sol_rhs(N_fast_eqn+1:end) =  {sol_consrv'};
@@ -681,11 +678,7 @@ end
 if length(consrv_nm)>1
     sol_consrv_elim = cell2sym(struct2cell((solve(consrv_rhs_init,str2sym(consrv_nm)))));
 else
-    if ~isempty(consrv_eqns_elim)
-        sol_consrv_elim = solve(consrv_rhs_init,str2sym(consrv_nm));
-    else
-        sol_consrv_elim=cell2sym({});
-    end
+    sol_consrv_elim = solve(consrv_rhs_init,str2sym(consrv_nm));
 end
 %
 % consrv_rhs_elim = string(sol_consrv_elim);

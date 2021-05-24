@@ -1,5 +1,5 @@
-Raci <-> Rac; b_R, delta;
-Rhoi <-> Rho; b_Rho, delta;
+Raci <-> Rac; b_R/(1+Rho^n), delta;
+Rhoi <-> Rho; b_Rho/(1+Rac^n), delta;
 {} <-> E; epsilon*a, epsilon*d;
 
 b_Rho=k_E+gamma_E*((E^m)/((E_0^m)+E^m))
@@ -10,14 +10,16 @@ Ractot = Rac +Raci
 Rhotot = Rho +Rhoi
 
 
-par b_R=2, E=0, delta=1, epsilon=0.001, n=3, m=3, gamma_E=4
+par b_R=3.6, delta=1, epsilon=0.001, n=3, m=3, gamma_E=4
 par gamma_Rho=10, gamma_R=5, k_E=2, K=2, k_Rho=0.45, E_0=1.5, R_0=1, Rho_0=2.4
 
-par Ractot=1.5, Rhotot=1.5
+par Ractot=6, Rhotot=6
 
 D(Raci)=D(Rhoi)=1
 D(Rac)=D(Rho)=0.1
 
-Rac(0)=
-Rho(0)=0
-E(0)=1
+Rac(0)=0
+Rho(0)=1
+E(0)=2
+
+LPA_global(Raci,Rhoi)

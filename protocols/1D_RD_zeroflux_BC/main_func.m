@@ -15,7 +15,7 @@ ic_fun = pdepe_ic();
 Ttot=1e3;
 Xmax=3;
 t_samples=linspace(0,Ttot,5e2);
-xmesh=linspace(0,Xmax,15e2);
+xmesh=linspace(0,Xmax,5e2);
 
 sol = pdepe(0, rhs, ic_fun, @zeroflux, xmesh, t_samples);
 

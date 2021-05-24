@@ -6,9 +6,13 @@ for i=1:size(r,2)
 %     r=r(:,i);
 %     r(r<0)=0;
     inds = r(:,i)>0;
-    terms = strcat(chems(inds),cellstr(repmat('.^',[nnz(inds),1]))',cellstr(string(r(inds,i)))');
-    terms = regexprep(terms,'\.\^1$',''); %remove exponent 1's from rate computation
-    rate_str = [ rate_constants{i} '.*' strjoin(terms,'.*')];
+    if nnz(inds)
+        terms = strcat(chems(inds),cellstr(repmat('.^',[nnz(inds),1]))',cellstr(string(r(inds,i)))');
+        terms = regexprep(terms,'\.\^1$',''); %remove exponent 1's from rate computation
+        rate_str = [ rate_constants{i} '.*' strjoin(terms,'.*')];
+    else
+        rate_str = rate_constants{i};
+    end
     rxn_rates{i} = rate_str;
 end
 S=p-r;

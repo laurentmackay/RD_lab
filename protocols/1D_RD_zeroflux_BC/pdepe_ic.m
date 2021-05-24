@@ -20,10 +20,12 @@ function h=pdepe_ic()
         
         u0=fp*(1+0.005*randn());
         i_Rac= find(strcmp(chems, 'Rac'));
-        if x<0.3 && ~isempty(i_Rac)
-            u0(i_Rac)=u0(i_Rac)*2;
-        end
+        i_Raci= find(strcmp(chems, 'Raci'));
         
+        if x<0.3 && ~isempty(i_Rac)
+%             u0(i_Rac)=u0(i_Rac)*2;
+        end
+%         
     end
 
     h=@ic;
