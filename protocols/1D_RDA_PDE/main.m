@@ -1,4 +1,5 @@
 N=1e4;
+T_tot=1e2;
 dt=0.1;
 Q=1;
 t_plot=2;
@@ -61,7 +62,7 @@ eval_aux_model
 CFL_max=0.8;
 dt0=dt;
 
-while t<1e3 && a+P<Q
+while t<T_tot && a+P<Q
     
     eval_model_implicit
     eval_aux_model

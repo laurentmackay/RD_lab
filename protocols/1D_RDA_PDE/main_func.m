@@ -1,5 +1,6 @@
 function main_func()
 N=1e4;
+T_tot=1e2;
 dt=0.1;
 Q=1;
 t_plot=2;
@@ -76,14 +77,14 @@ gamma_L=1;
 Q=1;
 cnsrv_1=1;
 
+
+V=[0 0 0 0 0];
 in_cell = x>=u_aux(1) & x<=(u_aux(1)+P);
 front = x>=u_aux(1)+P./2 & x<=u_aux(1)+P;
 rear = x>=u_aux(1) & x<u_aux(1)+P./2 ;
 Rb_rear = trapz(x(rear),u(rear,3));
 Rb_front = trapz(x(front),u(front,3));
 v_cell = c.*(Rb_front-Rb_rear);
-
-V=[v_cell 0 v_cell v_cell v_cell];
 a=u_aux(1);
 
 f_aux=[v_cell];
@@ -92,7 +93,7 @@ f0_star = (f0_for+f0)/2-(sign(v_prev).*(f0_for-f0))/2;
 CFL_max=0.8;
 dt0=dt;
 
-while t<1e3 && a+P<Q
+while t<T_tot && a+P<Q
     
     in_cell = x>=u_aux(1) & x<=(u_aux(1)+P);
 front = x>=u_aux(1)+P./2 & x<=u_aux(1)+P;
@@ -100,8 +101,6 @@ rear = x>=u_aux(1) & x<u_aux(1)+P./2 ;
 Rb_rear = trapz(x(rear),u(rear,3));
 Rb_front = trapz(x(front),u(front,3));
 v_cell = c.*(Rb_front-Rb_rear);
-
-V=[v_cell 0 v_cell v_cell v_cell];
 a=u_aux(1);
 
 f_aux=[v_cell];
@@ -134,7 +133,7 @@ Rx(:,2)=Rx(:,2)+exp(-((x-Q/2).^2)/(0.1)^2);
              + (1-sign(v))*Rx_tilde/2;
     u=u+dudt0_adv*u*(v*dt)+Rx_star*dt;
     if t-last_plot>=t_plot
-        inds=[1 3];
+        inds=[1 2 3];
         hplot=plot(x,u(:,inds));
         legend(hplot,chems{inds})
         xline(a);
@@ -149,5 +148,5 @@ Rx(:,2)=Rx(:,2)+exp(-((x-Q/2).^2)/(0.1)^2);
     u_aux=u_aux+f_aux*dt;
     v_prev=v;
 end
-
+save('C:\Users\metap\git\RD_lab\_gen_model_Nov2015\results\1D_RDA_PDE.mat')
 end

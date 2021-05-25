@@ -2,62 +2,85 @@ classdef RD_lab < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        RD_labUIFigure               matlab.ui.Figure
-        TabGroup                     matlab.ui.container.TabGroup
-        ModelTab                     matlab.ui.container.Tab
-        DeployModelButton            matlab.ui.control.Button
-        SelectModelDropDownLabel     matlab.ui.control.Label
-        SelectModelDropDown          matlab.ui.control.DropDown
+        RD_labUIFigure                 matlab.ui.Figure
+        TabGroup                       matlab.ui.container.TabGroup
+        ModelTab                       matlab.ui.container.Tab
+        DeployModelButton              matlab.ui.control.Button
+        SelectModelDropDownLabel       matlab.ui.control.Label
+        SelectModelDropDown            matlab.ui.control.DropDown
         ModelSpecificationTextAreaLabel  matlab.ui.control.Label
-        ModelSpecificationTextArea   matlab.ui.control.TextArea
-        SaveChangesButton            matlab.ui.control.Button
-        OpenDirectoryButton          matlab.ui.control.Button
-        ProtocolTab                  matlab.ui.container.Tab
-        SelectProtocolDropDownLabel  matlab.ui.control.Label
-        SelectProtocolDropDown       matlab.ui.control.DropDown
-        ScriptTree                   matlab.ui.container.Tree
-        ProtocolVariableTable        matlab.ui.control.Table
-        RunProtocolButton            matlab.ui.control.Button
-        SetProtocolButton            matlab.ui.control.Button
-        SaveResultsCheckBox          matlab.ui.control.CheckBox
-        FilenameEditFieldLabel       matlab.ui.control.Label
-        FilenameEditField            matlab.ui.control.EditField
-        ExperimentTab                matlab.ui.container.Tab
-        NameEditFieldLabel           matlab.ui.control.Label
-        NameEditField                matlab.ui.control.EditField
-        ResultsExplorerTab           matlab.ui.container.Tab
-        TabGroup2                    matlab.ui.container.TabGroup
-        IllustrativeTab              matlab.ui.container.Tab
-        ResultsVariableTable         matlab.ui.control.Table
-        DCheckBox_3                  matlab.ui.control.CheckBox
-        DCheckBox_4                  matlab.ui.control.CheckBox
-        PseudocolorCheckBox_2        matlab.ui.control.CheckBox
-        SurfaceCheckBox_2            matlab.ui.control.CheckBox
-        QuantitativeTab              matlab.ui.container.Tab
-        Yaxis2DDropDownLabel         matlab.ui.control.Label
-        Yaxis2DDropDown              matlab.ui.control.DropDown
-        Yaxis3DDropDownLabel         matlab.ui.control.Label
-        Yaxis3DDropDown              matlab.ui.control.DropDown
-        XaxisDropDownLabel           matlab.ui.control.Label
-        XaxisDropDown                matlab.ui.control.DropDown
-        VisualizeButton_2            matlab.ui.control.Button
+        ModelSpecificationTextArea     matlab.ui.control.TextArea
+        SaveChangesButton              matlab.ui.control.Button
+        OpenDirectoryButton            matlab.ui.control.Button
+        ProtocolTab                    matlab.ui.container.Tab
+        SelectProtocolDropDownLabel    matlab.ui.control.Label
+        SelectProtocolDropDown         matlab.ui.control.DropDown
+        ScriptTree                     matlab.ui.container.Tree
+        ProtocolVariableTable          matlab.ui.control.Table
+        RunProtocolButton              matlab.ui.control.Button
+        SetProtocolButton              matlab.ui.control.Button
+        SaveResultsCheckBox            matlab.ui.control.CheckBox
+        FilenameEditFieldLabel         matlab.ui.control.Label
+        FilenameEditField              matlab.ui.control.EditField
+        ExperimentTab                  matlab.ui.container.Tab
+        NameEditFieldLabel             matlab.ui.control.Label
+        NameEditField                  matlab.ui.control.EditField
+        ResultsExplorerTab             matlab.ui.container.Tab
+        TabGroup2                      matlab.ui.container.TabGroup
+        IllustrativeTab                matlab.ui.container.Tab
+        ResultsVariableTable           matlab.ui.control.Table
+        LaunchVisualizerButton         matlab.ui.control.Button
+        SharedVariablesOnlyCheckBox    matlab.ui.control.CheckBox
+        QuantitativeTab                matlab.ui.container.Tab
+        Yaxis2DDropDownLabel           matlab.ui.control.Label
+        Yaxis2DDropDown                matlab.ui.control.DropDown
+        Yaxis3DDropDownLabel           matlab.ui.control.Label
+        Yaxis3DDropDown                matlab.ui.control.DropDown
+        XaxisDropDownLabel             matlab.ui.control.Label
+        XaxisDropDown                  matlab.ui.control.DropDown
         SelectResultsCtrlorShiftClicktoSelectMultiplePanel  matlab.ui.container.Panel
-        ModelsLabel                  matlab.ui.control.Label
-        ExperimentsLabel             matlab.ui.control.Label
-        ExperimentsTree              matlab.ui.container.Tree
-        NoneNode_2                   matlab.ui.container.TreeNode
-        ModelsTree                   matlab.ui.container.Tree
-        NoneNode                     matlab.ui.container.TreeNode
-        AvailableFilesLabel          matlab.ui.control.Label
-        FilesTree                    matlab.ui.container.Tree
-        NoneNode_3                   matlab.ui.container.TreeNode
-        SharedVariablesOnlyCheckBox  matlab.ui.control.CheckBox
-        ActiveModelLabel             matlab.ui.control.Label
-        ActiveProtocolLabel          matlab.ui.control.Label
-        ActiveExperimentLabel        matlab.ui.control.Label
-        ModelLabel                   matlab.ui.control.Label
-        ProtocolLabel                matlab.ui.control.Label
-        ExperimentLabel              matlab.ui.control.Label
+        ModelsLabel                    matlab.ui.control.Label
+        ExperimentsLabel               matlab.ui.control.Label
+        ExperimentsTree                matlab.ui.container.Tree
+        NoneNode_2                     matlab.ui.container.TreeNode
+        ModelsTree                     matlab.ui.container.Tree
+        NoneNode                       matlab.ui.container.TreeNode
+        AvailableFilesLabel            matlab.ui.control.Label
+        FilesTree                      matlab.ui.container.Tree
+        NoneNode_3                     matlab.ui.container.TreeNode
+        ResultsExplorerTab_2           matlab.ui.container.Tab
+        TabGroup2_2                    matlab.ui.container.TabGroup
+        IllustrativeTab_2              matlab.ui.container.Tab
+        ResultsVariableTable_2         matlab.ui.control.Table
+        DCheckBox_5                    matlab.ui.control.CheckBox
+        DCheckBox_6                    matlab.ui.control.CheckBox
+        PseudocolorCheckBox_3          matlab.ui.control.CheckBox
+        SurfaceCheckBox_3              matlab.ui.control.CheckBox
+        QuantitativeTab_2              matlab.ui.container.Tab
+        Yaxis2DDropDown_2Label         matlab.ui.control.Label
+        Yaxis2DDropDown_2              matlab.ui.control.DropDown
+        Yaxis3DDropDown_2Label         matlab.ui.control.Label
+        Yaxis3DDropDown_2              matlab.ui.control.DropDown
+        XaxisDropDown_2Label           matlab.ui.control.Label
+        XaxisDropDown_2                matlab.ui.control.DropDown
+        VisualizeButton_3              matlab.ui.control.Button
+        SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2  matlab.ui.container.Panel
+        ModelsLabel_2                  matlab.ui.control.Label
+        ExperimentsLabel_2             matlab.ui.control.Label
+        ExperimentsTree_2              matlab.ui.container.Tree
+        NoneNode_4                     matlab.ui.container.TreeNode
+        ModelsTree_2                   matlab.ui.container.Tree
+        NoneNode_5                     matlab.ui.container.TreeNode
+        AvailableFilesLabel_2          matlab.ui.control.Label
+        FilesTree_2                    matlab.ui.container.Tree
+        NoneNode_6                     matlab.ui.container.TreeNode
+        SharedVariablesOnlyCheckBox_2  matlab.ui.control.CheckBox
+        ActiveModelLabel               matlab.ui.control.Label
+        ActiveProtocolLabel            matlab.ui.control.Label
+        ActiveExperimentLabel          matlab.ui.control.Label
+        ModelLabel                     matlab.ui.control.Label
+        ProtocolLabel                  matlab.ui.control.Label
+        ExperimentLabel                matlab.ui.control.Label
     end
 
     
@@ -66,13 +89,15 @@ classdef RD_lab < matlab.apps.AppBase
         active_model = []
         protocol = 'None'
         active_protocol = []
+        background_saved = false;
         
     end
     
     methods (Access = private)
         
         function models = getModels(app)
-            models = dir("models/*");
+            global RD_base
+            models = dir(strcat(RD_base,"models/*"));
             models = {models(arrayfun(@(x) x.name(1)~='.',models)).name};
         end
         
@@ -82,13 +107,16 @@ classdef RD_lab < matlab.apps.AppBase
         end
         
         function setModel(app, model)
+            global RD_base
             app.model=model;
-            app.ModelSpecificationTextArea.Value = fileread(strcat("models/",model));
+            app.ModelSpecificationTextArea.Value = fileread(strcat(RD_base,"models/",model));
+            app.SaveChangesButton.Enable=false;
             app.checkModelDirectory()
         end
         
         function checkModelDirectory(app)
-            if ~isempty(ls(strcat('_',app.model)))
+            global RD_base
+            if ~isempty(ls(strcat(RD_base,'_',app.model)))
                 app.OpenDirectoryButton.Enable=true;
             else
                 app.OpenDirectoryButton.Enable=false;
@@ -158,7 +186,7 @@ classdef RD_lab < matlab.apps.AppBase
                     end
                 end
             end
-
+            
             deletable = arrayfun(@(x) strcmp(x.Text,'<None>') || strcmp(root_dir_func(x.Text),x.NodeData) ,orig_children);
             orig_children(~has_match & deletable).delete()
             
@@ -167,9 +195,16 @@ classdef RD_lab < matlab.apps.AppBase
             end
             
         end
+        
+        function saveModelText(app)
+            global RD_base
+            fid = fopen(strcat(RD_base,"models/",app.model),'w');
+            fprintf(fid, '%s', strjoin(app.ModelSpecificationTextArea.Value,newline));
+            fclose(fid);
+        end
     end
     
-
+    
     
 
     % Callbacks that handle component events
@@ -177,7 +212,8 @@ classdef RD_lab < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            addpath('lib/')
+            p=mfilename('fullpath');
+            addpath(strcat(regexprep(p,[  '\' filesep '[^\' filesep ']+$'],''),filesep,'lib'));
             app.FilenameEditField.Enable=0;
             app.SaveResultsCheckBox.Enable=0;
             
@@ -220,16 +256,17 @@ classdef RD_lab < matlab.apps.AppBase
 
         % Button pushed function: RunProtocolButton
         function RunProtocolButtonPushed(app, event)
+            global protocol
             if isempty(app.active_model) || strcmp(app.model,'None')
                 msgbox('Invalid Command: Please deploy a model first.')
             else
                 if app.SaveResultsCheckBox.Value
                     if isempty(app.FilenameEditField.Value)
-                        fn=uiputfile('*.mat','Save Filename','result.mat')
+                        [fn,path]=uiputfile('*.mat','Save Filename',strcat(results_dir(),protocol,'.mat'));
                     else
-                        fn=strcat(results_dir(),app.FilenameEditField.Value);
+                        [fn,path]=strcat(results_dir(),app.FilenameEditField.Value);
                     end
-                    mk_fun('main',{},{},strcat("save('", fn, "')"));
+                    mk_fun('main',{},{},strcat("save('", strcat(path,fn), "')"));
                 else
                     mk_fun('main');
                 end
@@ -242,10 +279,23 @@ classdef RD_lab < matlab.apps.AppBase
         function DeployModelButtonPushed(app, event)
             global active_model
             if ~isempty(app.model) && ~strcmp(app.model,'None')
+                
+                app.saveModelText()
+                app.ModelSpecificationTextArea.Editable=false;
+                app.SaveChangesButton.Enable=false;
+                disp('save changes has been disabled')
+                %                 try
                 deploy_model(app.model,1);
+                
                 app.active_model=app.model;
                 app.ModelLabel.Text=active_model;
                 app.checkModelDirectory()
+                app.background_saved=false;
+                %                 catch err
+                %                     rethrow(err)
+                %                 end
+                app.ModelSpecificationTextArea.Editable = true;
+                
             end
         end
 
@@ -264,7 +314,6 @@ classdef RD_lab < matlab.apps.AppBase
         % Selection change function: TabGroup2
         function TabGroup2SelectionChanged(app, event)
             selectedTab = app.TabGroup2.SelectedTab;
-            
         end
 
         % Selection change function: TabGroup
@@ -321,7 +370,7 @@ classdef RD_lab < matlab.apps.AppBase
         % Selection changed function: FilesTree
         function FilesTreeSelectionChanged(app, event)
             selectedNodes = app.FilesTree.SelectedNodes;
-
+            
             for node = selectedNodes'
                 if isempty(node.NodeData) && ischar(node.Parent.NodeData)
                     node.NodeData=whos('-file',strcat(node.Parent.NodeData,'/',node.Text));
@@ -330,16 +379,52 @@ classdef RD_lab < matlab.apps.AppBase
             
             data={selectedNodes.NodeData};
             names=cellfun(@(x) {x.name},data,'UniformOutput',false);
-            names_tot = unique([names{:}],'stable');
+            
+            [names_tot, ia, ic] = unique([names{:}],'stable');
             if app.SharedVariablesOnlyCheckBox.Value
                 disp('this is going to be implemented later bro')
             end
-            app.ResultsVariableTable.Data=[names_tot',names_tot'];
+            sizes = cellfun(@(nm,d) {d(index_B(names_tot,nm)).size}, names, data,'UniformOutput',0);
+            sizes_tot = cell(length(names_tot),1);
+            [sizes_tot{:}]=deal({});
+            jj = cellfun(@(nm) index_A(names_tot,nm), names, 'UniformOutput',0);
+            for i = 1:size(selectedNodes,1)
+                for k=1:length(jj{i})
+                    sizes_tot{jj{i}(k)}{end+1}=mat2str(sizes{i}{k});
+                end
+            end
+            sizes_tot = cellfun(@(sz) strjoin(unique(sz,'stable'), newline),sizes_tot,'UniformOutput',false);
+
+            
+            plot_flag = false(size(sizes_tot));
+            old_data  = app.ResultsVariableTable.Data;
+            if ~isempty(old_data)
+                
+                [~,i_intersect,i_old]=intersect(names_tot',old_data.Var1);
+                plot_flag(i_old)=old_data.plot_flag(i_intersect);
+            end
+            app.ResultsVariableTable.Data=table(names_tot', sizes_tot, plot_flag);
         end
 
         % Button pushed function: OpenDirectoryButton
         function OpenDirectoryButtonPushed(app, event)
-            winopen(strcat('_',app.model))
+            global RD_base
+            winopen(strcat(RD_base,'_',app.model))
+        end
+
+        % Value changed function: ModelSpecificationTextArea
+        function ModelSpecificationTextAreaValueChanged(app, event)
+            disp('model changed')
+            if app.ModelSpecificationTextArea.Editable
+                disp('ya boi was editable')
+                app.SaveChangesButton.Enable=true;
+            end
+        end
+
+        % Button pushed function: SaveChangesButton
+        function SaveChangesButtonPushed(app, event)
+            app.saveModelText()
+            app.SaveChangesButton.Enable=false;
         end
     end
 
@@ -390,10 +475,12 @@ classdef RD_lab < matlab.apps.AppBase
 
             % Create ModelSpecificationTextArea
             app.ModelSpecificationTextArea = uitextarea(app.ModelTab);
+            app.ModelSpecificationTextArea.ValueChangedFcn = createCallbackFcn(app, @ModelSpecificationTextAreaValueChanged, true);
             app.ModelSpecificationTextArea.Position = [27 15 703 343];
 
             % Create SaveChangesButton
             app.SaveChangesButton = uibutton(app.ModelTab, 'push');
+            app.SaveChangesButton.ButtonPushedFcn = createCallbackFcn(app, @SaveChangesButtonPushed, true);
             app.SaveChangesButton.Position = [303 398 100 22];
             app.SaveChangesButton.Text = 'Save Changes';
 
@@ -488,29 +575,21 @@ classdef RD_lab < matlab.apps.AppBase
 
             % Create ResultsVariableTable
             app.ResultsVariableTable = uitable(app.IllustrativeTab);
-            app.ResultsVariableTable.ColumnName = {'Name'; 'Size'};
+            app.ResultsVariableTable.ColumnName = {'Name'; 'Size(s)'; 'Plot?'};
+            app.ResultsVariableTable.ColumnWidth = {'auto', 'auto', 45};
             app.ResultsVariableTable.RowName = {};
-            app.ResultsVariableTable.Position = [19 192 370 170];
+            app.ResultsVariableTable.ColumnEditable = [false false true];
+            app.ResultsVariableTable.Position = [19 50 370 323];
 
-            % Create DCheckBox_3
-            app.DCheckBox_3 = uicheckbox(app.IllustrativeTab);
-            app.DCheckBox_3.Text = '2D';
-            app.DCheckBox_3.Position = [131 123 37 22];
+            % Create LaunchVisualizerButton
+            app.LaunchVisualizerButton = uibutton(app.IllustrativeTab, 'push');
+            app.LaunchVisualizerButton.Position = [255 19 134 22];
+            app.LaunchVisualizerButton.Text = 'Launch Visualizer';
 
-            % Create DCheckBox_4
-            app.DCheckBox_4 = uicheckbox(app.IllustrativeTab);
-            app.DCheckBox_4.Text = '3D';
-            app.DCheckBox_4.Position = [131 86 37 22];
-
-            % Create PseudocolorCheckBox_2
-            app.PseudocolorCheckBox_2 = uicheckbox(app.IllustrativeTab);
-            app.PseudocolorCheckBox_2.Text = 'Pseudocolor';
-            app.PseudocolorCheckBox_2.Position = [164 65 89 22];
-
-            % Create SurfaceCheckBox_2
-            app.SurfaceCheckBox_2 = uicheckbox(app.IllustrativeTab);
-            app.SurfaceCheckBox_2.Text = 'Surface';
-            app.SurfaceCheckBox_2.Position = [164 44 63 22];
+            % Create SharedVariablesOnlyCheckBox
+            app.SharedVariablesOnlyCheckBox = uicheckbox(app.IllustrativeTab);
+            app.SharedVariablesOnlyCheckBox.Text = 'Shared Variables Only';
+            app.SharedVariablesOnlyCheckBox.Position = [19 19 141 22];
 
             % Create QuantitativeTab
             app.QuantitativeTab = uitab(app.TabGroup2);
@@ -546,33 +625,28 @@ classdef RD_lab < matlab.apps.AppBase
             app.XaxisDropDown = uidropdown(app.QuantitativeTab);
             app.XaxisDropDown.Position = [213 313 175 22];
 
-            % Create VisualizeButton_2
-            app.VisualizeButton_2 = uibutton(app.ResultsExplorerTab, 'push');
-            app.VisualizeButton_2.Position = [241 10 100 22];
-            app.VisualizeButton_2.Text = 'Visualize';
-
             % Create SelectResultsCtrlorShiftClicktoSelectMultiplePanel
             app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel = uipanel(app.ResultsExplorerTab);
             app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel.Title = 'Select Results  - Ctrl or Shift Click to Select Multiple';
-            app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel.Position = [9 41 332 384];
+            app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel.Position = [9 6 332 419];
 
             % Create ModelsLabel
             app.ModelsLabel = uilabel(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel);
             app.ModelsLabel.HorizontalAlignment = 'right';
-            app.ModelsLabel.Position = [103 338 52 22];
+            app.ModelsLabel.Position = [103 373 52 22];
             app.ModelsLabel.Text = 'Model(s)';
 
             % Create ExperimentsLabel
             app.ExperimentsLabel = uilabel(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel);
             app.ExperimentsLabel.HorizontalAlignment = 'right';
-            app.ExperimentsLabel.Position = [74 157 80 22];
+            app.ExperimentsLabel.Position = [74 174 80 22];
             app.ExperimentsLabel.Text = 'Experiment(s)';
 
             % Create ExperimentsTree
             app.ExperimentsTree = uitree(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel);
             app.ExperimentsTree.Multiselect = 'on';
             app.ExperimentsTree.SelectionChangedFcn = createCallbackFcn(app, @ExperimentsTreeSelectionChanged, true);
-            app.ExperimentsTree.Position = [6 4 149 152];
+            app.ExperimentsTree.Position = [6 5 149 166];
 
             % Create NoneNode_2
             app.NoneNode_2 = uitreenode(app.ExperimentsTree);
@@ -582,7 +656,7 @@ classdef RD_lab < matlab.apps.AppBase
             app.ModelsTree = uitree(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel);
             app.ModelsTree.Multiselect = 'on';
             app.ModelsTree.SelectionChangedFcn = createCallbackFcn(app, @ModelsTreeSelectionChanged, true);
-            app.ModelsTree.Position = [6 187 149 152];
+            app.ModelsTree.Position = [6 213 149 161];
 
             % Create NoneNode
             app.NoneNode = uitreenode(app.ModelsTree);
@@ -591,23 +665,152 @@ classdef RD_lab < matlab.apps.AppBase
             % Create AvailableFilesLabel
             app.AvailableFilesLabel = uilabel(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel);
             app.AvailableFilesLabel.HorizontalAlignment = 'right';
-            app.AvailableFilesLabel.Position = [233 338 91 22];
+            app.AvailableFilesLabel.Position = [233 373 91 22];
             app.AvailableFilesLabel.Text = 'Available File(s)';
 
             % Create FilesTree
             app.FilesTree = uitree(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel);
             app.FilesTree.Multiselect = 'on';
             app.FilesTree.SelectionChangedFcn = createCallbackFcn(app, @FilesTreeSelectionChanged, true);
-            app.FilesTree.Position = [164 4 160 334];
+            app.FilesTree.Position = [164 4 160 369];
 
             % Create NoneNode_3
             app.NoneNode_3 = uitreenode(app.FilesTree);
             app.NoneNode_3.Text = '<None>';
 
-            % Create SharedVariablesOnlyCheckBox
-            app.SharedVariablesOnlyCheckBox = uicheckbox(app.ResultsExplorerTab);
-            app.SharedVariablesOnlyCheckBox.Text = 'Shared Variables Only';
-            app.SharedVariablesOnlyCheckBox.Position = [39 11 141 22];
+            % Create ResultsExplorerTab_2
+            app.ResultsExplorerTab_2 = uitab(app.TabGroup);
+            app.ResultsExplorerTab_2.Title = 'Results Explorer';
+
+            % Create TabGroup2_2
+            app.TabGroup2_2 = uitabgroup(app.ResultsExplorerTab_2);
+            app.TabGroup2_2.Position = [351 6 401 419];
+
+            % Create IllustrativeTab_2
+            app.IllustrativeTab_2 = uitab(app.TabGroup2_2);
+            app.IllustrativeTab_2.Title = 'Illustrative';
+
+            % Create ResultsVariableTable_2
+            app.ResultsVariableTable_2 = uitable(app.IllustrativeTab_2);
+            app.ResultsVariableTable_2.ColumnName = {'Name'; 'Size(s)'; 'Plot?'};
+            app.ResultsVariableTable_2.ColumnWidth = {'auto', 'auto', 45};
+            app.ResultsVariableTable_2.RowName = {};
+            app.ResultsVariableTable_2.ColumnEditable = [false false true];
+            app.ResultsVariableTable_2.Position = [19 125 370 248];
+
+            % Create DCheckBox_5
+            app.DCheckBox_5 = uicheckbox(app.IllustrativeTab_2);
+            app.DCheckBox_5.Text = '2D';
+            app.DCheckBox_5.Position = [131 87 37 22];
+
+            % Create DCheckBox_6
+            app.DCheckBox_6 = uicheckbox(app.IllustrativeTab_2);
+            app.DCheckBox_6.Text = '3D';
+            app.DCheckBox_6.Position = [131 50 37 22];
+
+            % Create PseudocolorCheckBox_3
+            app.PseudocolorCheckBox_3 = uicheckbox(app.IllustrativeTab_2);
+            app.PseudocolorCheckBox_3.Text = 'Pseudocolor';
+            app.PseudocolorCheckBox_3.Position = [164 29 89 22];
+
+            % Create SurfaceCheckBox_3
+            app.SurfaceCheckBox_3 = uicheckbox(app.IllustrativeTab_2);
+            app.SurfaceCheckBox_3.Text = 'Surface';
+            app.SurfaceCheckBox_3.Position = [164 8 63 22];
+
+            % Create QuantitativeTab_2
+            app.QuantitativeTab_2 = uitab(app.TabGroup2_2);
+            app.QuantitativeTab_2.Title = 'Quantitative';
+
+            % Create Yaxis2DDropDown_2Label
+            app.Yaxis2DDropDown_2Label = uilabel(app.QuantitativeTab_2);
+            app.Yaxis2DDropDown_2Label.HorizontalAlignment = 'right';
+            app.Yaxis2DDropDown_2Label.Position = [74 283 60 22];
+            app.Yaxis2DDropDown_2Label.Text = 'Y-axis (2D)';
+
+            % Create Yaxis2DDropDown_2
+            app.Yaxis2DDropDown_2 = uidropdown(app.QuantitativeTab_2);
+            app.Yaxis2DDropDown_2.Position = [214 283 175 22];
+
+            % Create Yaxis3DDropDown_2Label
+            app.Yaxis3DDropDown_2Label = uilabel(app.QuantitativeTab_2);
+            app.Yaxis3DDropDown_2Label.HorizontalAlignment = 'right';
+            app.Yaxis3DDropDown_2Label.Position = [71 251 64 22];
+            app.Yaxis3DDropDown_2Label.Text = 'Y-axis (3D)';
+
+            % Create Yaxis3DDropDown_2
+            app.Yaxis3DDropDown_2 = uidropdown(app.QuantitativeTab_2);
+            app.Yaxis3DDropDown_2.Position = [215 251 175 22];
+
+            % Create XaxisDropDown_2Label
+            app.XaxisDropDown_2Label = uilabel(app.QuantitativeTab_2);
+            app.XaxisDropDown_2Label.HorizontalAlignment = 'right';
+            app.XaxisDropDown_2Label.Position = [73 313 60 22];
+            app.XaxisDropDown_2Label.Text = 'X-axis';
+
+            % Create XaxisDropDown_2
+            app.XaxisDropDown_2 = uidropdown(app.QuantitativeTab_2);
+            app.XaxisDropDown_2.Position = [213 313 175 22];
+
+            % Create VisualizeButton_3
+            app.VisualizeButton_3 = uibutton(app.ResultsExplorerTab_2, 'push');
+            app.VisualizeButton_3.Position = [241 10 100 22];
+            app.VisualizeButton_3.Text = 'Visualize';
+
+            % Create SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2
+            app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2 = uipanel(app.ResultsExplorerTab_2);
+            app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2.Title = 'Select Results  - Ctrl or Shift Click to Select Multiple';
+            app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2.Position = [9 41 332 384];
+
+            % Create ModelsLabel_2
+            app.ModelsLabel_2 = uilabel(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2);
+            app.ModelsLabel_2.HorizontalAlignment = 'right';
+            app.ModelsLabel_2.Position = [103 338 52 22];
+            app.ModelsLabel_2.Text = 'Model(s)';
+
+            % Create ExperimentsLabel_2
+            app.ExperimentsLabel_2 = uilabel(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2);
+            app.ExperimentsLabel_2.HorizontalAlignment = 'right';
+            app.ExperimentsLabel_2.Position = [74 157 80 22];
+            app.ExperimentsLabel_2.Text = 'Experiment(s)';
+
+            % Create ExperimentsTree_2
+            app.ExperimentsTree_2 = uitree(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2);
+            app.ExperimentsTree_2.Multiselect = 'on';
+            app.ExperimentsTree_2.Position = [6 4 149 152];
+
+            % Create NoneNode_4
+            app.NoneNode_4 = uitreenode(app.ExperimentsTree_2);
+            app.NoneNode_4.Text = '<None>';
+
+            % Create ModelsTree_2
+            app.ModelsTree_2 = uitree(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2);
+            app.ModelsTree_2.Multiselect = 'on';
+            app.ModelsTree_2.Position = [6 187 149 152];
+
+            % Create NoneNode_5
+            app.NoneNode_5 = uitreenode(app.ModelsTree_2);
+            app.NoneNode_5.Text = '<None>';
+
+            % Create AvailableFilesLabel_2
+            app.AvailableFilesLabel_2 = uilabel(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2);
+            app.AvailableFilesLabel_2.HorizontalAlignment = 'right';
+            app.AvailableFilesLabel_2.Position = [233 338 91 22];
+            app.AvailableFilesLabel_2.Text = 'Available File(s)';
+
+            % Create FilesTree_2
+            app.FilesTree_2 = uitree(app.SelectResultsCtrlorShiftClicktoSelectMultiplePanel_2);
+            app.FilesTree_2.Multiselect = 'on';
+            app.FilesTree_2.Position = [164 4 160 334];
+
+            % Create NoneNode_6
+            app.NoneNode_6 = uitreenode(app.FilesTree_2);
+            app.NoneNode_6.Text = '<None>';
+
+            % Create SharedVariablesOnlyCheckBox_2
+            app.SharedVariablesOnlyCheckBox_2 = uicheckbox(app.ResultsExplorerTab_2);
+            app.SharedVariablesOnlyCheckBox_2.Text = 'Shared Variables Only';
+            app.SharedVariablesOnlyCheckBox_2.Position = [39 11 141 22];
 
             % Create ActiveModelLabel
             app.ActiveModelLabel = uilabel(app.RD_labUIFigure);
