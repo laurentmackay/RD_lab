@@ -18,7 +18,6 @@ classdef RD_lab < matlab.apps.AppBase
         ScriptTree                     matlab.ui.container.Tree
         ProtocolVariableTable          matlab.ui.control.Table
         RunProtocolButton              matlab.ui.control.Button
-        SetProtocolButton              matlab.ui.control.Button
         SaveResultsCheckBox            matlab.ui.control.CheckBox
         FilenameEditFieldLabel         matlab.ui.control.Label
         FilenameEditField              matlab.ui.control.EditField
@@ -529,11 +528,6 @@ classdef RD_lab < matlab.apps.AppBase
             app.RunProtocolButton.ButtonPushedFcn = createCallbackFcn(app, @RunProtocolButtonPushed, true);
             app.RunProtocolButton.Position = [301 398 100 22];
             app.RunProtocolButton.Text = 'Run Protocol';
-
-            % Create SetProtocolButton
-            app.SetProtocolButton = uibutton(app.ProtocolTab, 'push');
-            app.SetProtocolButton.Position = [42 357 100 22];
-            app.SetProtocolButton.Text = 'Set Protocol';
 
             % Create SaveResultsCheckBox
             app.SaveResultsCheckBox = uicheckbox(app.ProtocolTab);

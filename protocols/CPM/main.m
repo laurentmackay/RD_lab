@@ -3,7 +3,7 @@ model_name = 'chem_Rx_Pax_Asheesh';
 
 plotting=usejava('desktop') && isempty(getCurrentTask());
 try
-    inputname(1);
+    nargin;
 catch
     deploy_model(model_name);
 end

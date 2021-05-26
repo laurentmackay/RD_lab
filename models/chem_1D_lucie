@@ -2,14 +2,14 @@
 Raci <->  Rac; Q_R, delta_R;
 
 R = Rac / Rac_Square;
-
+RacRatio = Rac / Rac_Square
 K=alphaR*R/(1+alphaR*R+a*d/(1+d+3/(1+R)));
 Rho=(Irho*LR^n)/(Irho*LR^n+delta_rho*(LR^n+(R+gamma*K)^n));
 c_p=K^n/(LK^n+K^n);
 Pax=B*c_p/(alphaP*B*c_p+delta_P);
 Iks=Ik*(1-(1/(1+d+a*d*c*Pax+0.5)));
 Rho=Irho*(LR^n)/(Irho*LR^n+delta_rho*(LR^n+(R+gamma*K)^n));
-
+RhoRatio = Rho / Rac_Square
 
 Q_R = (IR+Iks)*(Lrho^n/(Lrho^n+Rho^n));
 

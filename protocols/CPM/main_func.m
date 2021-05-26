@@ -1,13 +1,9 @@
-function [B,D,N_rx,N_slow,N_species,Rx,chems,eval_Rx,eval_Rx_slow,eval_model,ic,...
-induced_ic,initialize_chem_params,model_params,pic,project_fast,initialize_pic,...
-panel1,results_dir] = main_func(B,D,N_rx,N_slow,N_species,Rx,chems,eval_Rx,...
-eval_Rx_slow,eval_model,ic,induced_ic,initialize_chem_params,model_params,pic,...
-project_fast,initialize_pic,panel1,results_dir)
+function main_func()
 model_name = 'chem_Rx_Pax_Asheesh';
 
 plotting=usejava('desktop') && isempty(getCurrentTask());
 try
-    inputname(1);
+    nargin;
 catch
     deploy_model(model_name);
 end
@@ -15,8 +11,9 @@ end
 
 if plotting 
     
-    initialize_pic
-    
+    pic_fig=figure(1);clf();
+panel1=subplot(2,1,1);
+panel2=subplot(2,1,2);
 end
 
 Ttot=5e4; 
@@ -103,8 +100,25 @@ bndry_lr= bndry_l | bndry_r;
 
 bndrys=[bndry_up(:) bndry_down(:) bndry_l(:) bndry_r(:)];
 
-initialize_chem_params
-    initialize_chem_params
+N_species = 2;
+N_rx = 2;
+D = [0.25        0.02];
+N_slow = 2;
+chems={'Raci','Rac'};
+
+
+
+
+
+N_species = 2;
+N_rx = 2;
+D = [0.25        0.02];
+N_slow = 2;
+chems={'Raci','Rac'};
+
+
+
+
 
 i_chem_0 = ((1:N_species)-1)*sz;
 
@@ -121,8 +135,28 @@ Pax_Square = 1;
 
 N_instantaneous=50;
 
-model_params
-
+B=0.500000000;
+Irho=0.016000000;
+Lrho=0.340000000;
+delta_rho=0.016000000;
+LR=0.340000000;
+IR=0.003000000;
+delta_R=0.025000000;
+alphaR=15.000000000;
+delta_P=0.000400000;
+Ik=0.009000000;
+LK=5.770000000;
+a=0.628100000;
+d=2.877300000;
+c=11.500000000;
+gamma=0.300000000;
+alphaP=2.200000000;
+Rac_Square=1.000000000;
+n=4.000000000;
+Ractot=1.000000000;
+Rtot=7.5;
+Ptot=1;
+Ractot=1;
 VolCell=(0.5*10^-6)*(h*10^-6)^2; 
 muM = 6.02214*10^23*VolCell*10^3*10^-6; 
 
@@ -218,8 +252,7 @@ PaxRatio=[PaxRatio_u; PaxRatio_i];
 
 
 
-induced_ic
-
+ic = [];
 mask=induced_mask&cell_mask;
 [tmp,tmp2]=meshgrid((0:N_species-1)*sz,find(mask));
 i_induced=tmp+tmp2;
@@ -247,9 +280,17 @@ ir0=((1:N_rx)-1)*sz;
 
 vox=cell_inds(1:A);
 
-eval_model
+R = x(:,:,2) ./ Rac_Square;
+RacRatio = x(:,:,2) ./ Rac_Square;
+K=alphaR.*R./(1+alphaR.*R+a.*d./(1+d+3./(1+R)));
+Rho=Irho.*(LR.^n)./(Irho.*LR.^n+delta_rho.*(LR.^n+(R+gamma.*K).^n));
+c_p=K.^n./(LK.^n+K.^n);
+Pax=B.*c_p./(alphaP.*B.*c_p+delta_P);
+Iks=Ik.*(1-(1./(1+d+a.*d.*c.*Pax+0.5)));
+RhoRatio = Rho ./ Rac_Square;
+Q_R = (IR+Iks).*(Lrho.^n./(Lrho.^n+Rho.^n));
 
-
+V=[0 0];
 
 
 
@@ -324,8 +365,34 @@ Hchem(iter)=dH_chem;
 
 
 u = reshape(x,[sz ,size(x,3)]);
-eval_model
-pic 
+R = x(:,:,2) ./ Rac_Square;
+RacRatio = x(:,:,2) ./ Rac_Square;
+K=alphaR.*R./(1+alphaR.*R+a.*d./(1+d+3./(1+R)));
+Rho=Irho.*(LR.^n)./(Irho.*LR.^n+delta_rho.*(LR.^n+(R+gamma.*K).^n));
+c_p=K.^n./(LK.^n+K.^n);
+Pax=B.*c_p./(alphaP.*B.*c_p+delta_P);
+Iks=Ik.*(1-(1./(1+d+a.*d.*c.*Pax+0.5)));
+RhoRatio = Rho ./ Rac_Square;
+Q_R = (IR+Iks).*(Lrho.^n./(Lrho.^n+Rho.^n));
+
+V=[0 0];
+if plotting
+
+tp__0=tic;
+
+plotCellIm(panel1,reshape(u(:,1),shape),cell_mask,i0,j0);
+caxis(panel1,'auto');
+colorbar(panel1);
+title(panel1,'Raci', 'Fontsize', 24);
+
+plotCellIm(panel2,reshape(u(:,2),shape),cell_mask,i0,j0);
+caxis(panel2,'auto');
+colorbar(panel2);
+title(panel2,'Rac', 'Fontsize', 24);
+
+sgtitle(pic_fig,['t=' num2str(time) ', t_{plot}=' num2str(double(tic-tp__0)*1e-6), ', t_{sim}=' num2str(toc)], 'Fontsize', 10,'FontWeight','bold')
+
+end
 if plotting && usejava('desktop') && isempty(getCurrentTask())
     delete test.gif
     gif('test.gif','frame',panel1)
@@ -441,7 +508,19 @@ u_xx=u_xx(cell_inds(1:A),cell_inds(1:A));
 
 
 
-eval_Rx_slow
+R = u(:,2) ./ Rac_Square;
+RacRatio = u(:,2) ./ Rac_Square;
+K=alphaR.*R./(1+alphaR.*R+a.*d./(1+d+3./(1+R)));
+Rho=Irho.*(LR.^n)./(Irho.*LR.^n+delta_rho.*(LR.^n+(R+gamma.*K).^n));
+c_p=K.^n./(LK.^n+K.^n);
+Pax=B.*c_p./(alphaP.*B.*c_p+delta_P);
+Iks=Ik.*(1-(1./(1+d+a.*d.*c.*Pax+0.5)));
+RhoRatio = Rho ./ Rac_Square;
+Q_R = (IR+Iks).*(Lrho.^n./(Lrho.^n+Rho.^n));
+f_Raci = -(Q_R.*u(:,1))+ (delta_R.*u(:,2));
+
+Rx = [f_Raci,...
+-f_Raci];
 u_prev = u(:,1:N_slow);
 
 t0=time;
@@ -457,8 +536,20 @@ while time-t0<T_integration
 
     
     Rx_prev=Rx;
-    eval_Rx_slow
-    u_curr = u(:,1:N_slow);
+    R = u(:,2) ./ Rac_Square;
+RacRatio = u(:,2) ./ Rac_Square;
+K=alphaR.*R./(1+alphaR.*R+a.*d./(1+d+3./(1+R)));
+Rho=Irho.*(LR.^n)./(Irho.*LR.^n+delta_rho.*(LR.^n+(R+gamma.*K).^n));
+c_p=K.^n./(LK.^n+K.^n);
+Pax=B.*c_p./(alphaP.*B.*c_p+delta_P);
+Iks=Ik.*(1-(1./(1+d+a.*d.*c.*Pax+0.5)));
+RhoRatio = Rho ./ Rac_Square;
+Q_R = (IR+Iks).*(Lrho.^n./(Lrho.^n+Rho.^n));
+f_Raci = -(Q_R.*u(:,1))+ (delta_R.*u(:,2));
+
+Rx = [f_Raci,...
+-f_Raci];
+u_curr = u(:,1:N_slow);
     b_=(2*u_curr-u_prev/2)/dt + (2*Rx-Rx_prev); 
     u_prev=u_curr;
 
@@ -466,10 +557,8 @@ while time-t0<T_integration
         u(:,i) = MAT_list{i}\b_(:,i);
     end
     
-    project_fast
     
-
-    time=time+dt;
+time=time+dt;
 
 
 end
@@ -479,7 +568,19 @@ end
     end
 x(cell_inds(1:A) + i_chem_0) = u(:);
 u = reshape(x,[sz ,size(x,3)]);
-eval_Rx 
+R = u(:,2) ./ Rac_Square;
+RacRatio = u(:,2) ./ Rac_Square;
+K=alphaR.*R./(1+alphaR.*R+a.*d./(1+d+3./(1+R)));
+Rho=Irho.*(LR.^n)./(Irho.*LR.^n+delta_rho.*(LR.^n+(R+gamma.*K).^n));
+c_p=K.^n./(LK.^n+K.^n);
+Pax=B.*c_p./(alphaP.*B.*c_p+delta_P);
+Iks=Ik.*(1-(1./(1+d+a.*d.*c.*Pax+0.5)));
+RhoRatio = Rho ./ Rac_Square;
+Q_R = (IR+Iks).*(Lrho.^n./(Lrho.^n+Rho.^n));
+f_Raci = -(Q_R.*u(:,1))+ (delta_R.*u(:,2));
+
+Rx = [f_Raci,...
+-f_Raci];
 
 if time>=lastcpm+cpmstep
             
@@ -734,8 +835,18 @@ is_discrete = all(mod(x(cell_inds(1:A)),1)==0);
         A=nnz(cell_mask); 
         cell_inds(1:A)=find(cell_mask);
     else
-        eval_model
-    end
+        R = x(:,:,2) ./ Rac_Square;
+RacRatio = x(:,:,2) ./ Rac_Square;
+K=alphaR.*R./(1+alphaR.*R+a.*d./(1+d+3./(1+R)));
+Rho=Irho.*(LR.^n)./(Irho.*LR.^n+delta_rho.*(LR.^n+(R+gamma.*K).^n));
+c_p=K.^n./(LK.^n+K.^n);
+Pax=B.*c_p./(alphaP.*B.*c_p+delta_P);
+Iks=Ik.*(1-(1./(1+d+a.*d.*c.*Pax+0.5)));
+RhoRatio = Rho ./ Rac_Square;
+Q_R = (IR+Iks).*(Lrho.^n./(Lrho.^n+Rho.^n));
+
+V=[0 0];
+end
     
     
     
@@ -798,8 +909,24 @@ lastcpm=time;
  
             if cpmcounter==cpmsteps*cpm_wait
               u = reshape(x,[sz ,size(x,3)]);
-              pic
-              lastplot=time; 
+              if plotting
+
+tp__0=tic;
+
+plotCellIm(panel1,reshape(u(:,1),shape),cell_mask,i0,j0);
+caxis(panel1,'auto');
+colorbar(panel1);
+title(panel1,'Raci', 'Fontsize', 24);
+
+plotCellIm(panel2,reshape(u(:,2),shape),cell_mask,i0,j0);
+caxis(panel2,'auto');
+colorbar(panel2);
+title(panel2,'Rac', 'Fontsize', 24);
+
+sgtitle(pic_fig,['t=' num2str(time) ', t_{plot}=' num2str(double(tic-tp__0)*1e-6), ', t_{sim}=' num2str(toc)], 'Fontsize', 10,'FontWeight','bold')
+
+end
+lastplot=time; 
             
                 i_rac = find(strcmp(chems,'Rac')); 
                 inds=cell_inds(1:A)+sz*(i_rac-1);
