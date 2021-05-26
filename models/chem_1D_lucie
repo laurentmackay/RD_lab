@@ -1,0 +1,45 @@
+
+Raci <->  Rac; Q_R, delta_R;
+
+R = Rac / Rac_Square;
+
+K=alphaR*R/(1+alphaR*R+a*d/(1+d+3/(1+R)));
+Rho=(Irho*LR^n)/(Irho*LR^n+delta_rho*(LR^n+(R+gamma*K)^n));
+c_p=K^n/(LK^n+K^n);
+Pax=B*c_p/(alphaP*B*c_p+delta_P);
+Iks=Ik*(1-(1/(1+d+a*d*c*Pax+0.5)));
+Rho=Irho*(LR^n)/(Irho*LR^n+delta_rho*(LR^n+(R+gamma*K)^n));
+
+
+Q_R = (IR+Iks)*(Lrho^n/(Lrho^n+Rho^n));
+
+Ractot = Rac + Raci
+
+plot(R)
+
+D(Raci)= 0.25      %fast diffusion for inactive RhoGTPases
+D(Rac)=0.02         %slow for active forms
+
+param B=0.5
+param Irho=0.016, Lrho=0.34, delta_rho=0.016
+param LR=0.34, IR=0.003, delta_R=0.025, alphaR=15, Rtot=7.5
+param delta_P=0.0004, Ik=0.009
+param LK=5.77
+param Ractot=1
+param Ptot=1
+param a=0.6281, d=2.8773, c=11.5
+param gamma=0.3, alphaP=2.2
+param Rac_Square=1.0
+param n=4
+
+% induced steady state
+%Raci(0) = 0
+
+% uninduced steady state
+Rac(0) = 0
+
+
+% initial conditions for the "induced" region
+% Rac(0,induced)=0.3
+
+% LPA_global(Raci)
