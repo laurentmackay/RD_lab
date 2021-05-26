@@ -116,11 +116,16 @@ classdef RD_lab < matlab.apps.AppBase
         
         function checkModelDirectory(app)
             global RD_base
-            if ~isempty(ls(strcat(RD_base,'_',app.model)))
-                app.OpenDirectoryButton.Enable=true;
-            else
+            try
+                if ~isempty(ls(strcat(RD_base,'_',app.model)))
+                    app.OpenDirectoryButton.Enable=true;
+                else
+                    app.OpenDirectoryButton.Enable=false;
+                end
+            catch
                 app.OpenDirectoryButton.Enable=false;
             end
+            
         end
         
         
