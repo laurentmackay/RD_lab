@@ -27,11 +27,11 @@ classdef RD_lab < matlab.apps.AppBase
         NameEditField                  matlab.ui.control.EditField
         ResultsExplorerTab             matlab.ui.container.Tab
         TabGroup2                      matlab.ui.container.TabGroup
-        IllustrativeTab                matlab.ui.container.Tab
+        RawVariablesTab                matlab.ui.container.Tab
         ResultsVariableTable           matlab.ui.control.Table
         LaunchVisualizerButton         matlab.ui.control.Button
         SharedVariablesOnlyCheckBox    matlab.ui.control.CheckBox
-        QuantitativeTab                matlab.ui.container.Tab
+        PostProcessingTab              matlab.ui.container.Tab
         Yaxis2DDropDownLabel           matlab.ui.control.Label
         Yaxis2DDropDown                matlab.ui.control.DropDown
         Yaxis3DDropDownLabel           matlab.ui.control.Label
@@ -569,12 +569,12 @@ classdef RD_lab < matlab.apps.AppBase
             app.TabGroup2.SelectionChangedFcn = createCallbackFcn(app, @TabGroup2SelectionChanged, true);
             app.TabGroup2.Position = [351 6 401 419];
 
-            % Create IllustrativeTab
-            app.IllustrativeTab = uitab(app.TabGroup2);
-            app.IllustrativeTab.Title = 'Illustrative';
+            % Create RawVariablesTab
+            app.RawVariablesTab = uitab(app.TabGroup2);
+            app.RawVariablesTab.Title = 'Raw Variables';
 
             % Create ResultsVariableTable
-            app.ResultsVariableTable = uitable(app.IllustrativeTab);
+            app.ResultsVariableTable = uitable(app.RawVariablesTab);
             app.ResultsVariableTable.ColumnName = {'Name'; 'Size(s)'; 'Plot?'};
             app.ResultsVariableTable.ColumnWidth = {'auto', 'auto', 45};
             app.ResultsVariableTable.RowName = {};
@@ -582,47 +582,47 @@ classdef RD_lab < matlab.apps.AppBase
             app.ResultsVariableTable.Position = [19 50 370 323];
 
             % Create LaunchVisualizerButton
-            app.LaunchVisualizerButton = uibutton(app.IllustrativeTab, 'push');
+            app.LaunchVisualizerButton = uibutton(app.RawVariablesTab, 'push');
             app.LaunchVisualizerButton.Position = [255 19 134 22];
             app.LaunchVisualizerButton.Text = 'Launch Visualizer';
 
             % Create SharedVariablesOnlyCheckBox
-            app.SharedVariablesOnlyCheckBox = uicheckbox(app.IllustrativeTab);
+            app.SharedVariablesOnlyCheckBox = uicheckbox(app.RawVariablesTab);
             app.SharedVariablesOnlyCheckBox.Text = 'Shared Variables Only';
             app.SharedVariablesOnlyCheckBox.Position = [19 19 141 22];
 
-            % Create QuantitativeTab
-            app.QuantitativeTab = uitab(app.TabGroup2);
-            app.QuantitativeTab.Title = 'Quantitative';
+            % Create PostProcessingTab
+            app.PostProcessingTab = uitab(app.TabGroup2);
+            app.PostProcessingTab.Title = 'Post-Processing';
 
             % Create Yaxis2DDropDownLabel
-            app.Yaxis2DDropDownLabel = uilabel(app.QuantitativeTab);
+            app.Yaxis2DDropDownLabel = uilabel(app.PostProcessingTab);
             app.Yaxis2DDropDownLabel.HorizontalAlignment = 'right';
             app.Yaxis2DDropDownLabel.Position = [74 283 60 22];
             app.Yaxis2DDropDownLabel.Text = 'Y-axis (2D)';
 
             % Create Yaxis2DDropDown
-            app.Yaxis2DDropDown = uidropdown(app.QuantitativeTab);
+            app.Yaxis2DDropDown = uidropdown(app.PostProcessingTab);
             app.Yaxis2DDropDown.Position = [214 283 175 22];
 
             % Create Yaxis3DDropDownLabel
-            app.Yaxis3DDropDownLabel = uilabel(app.QuantitativeTab);
+            app.Yaxis3DDropDownLabel = uilabel(app.PostProcessingTab);
             app.Yaxis3DDropDownLabel.HorizontalAlignment = 'right';
             app.Yaxis3DDropDownLabel.Position = [71 251 64 22];
             app.Yaxis3DDropDownLabel.Text = 'Y-axis (3D)';
 
             % Create Yaxis3DDropDown
-            app.Yaxis3DDropDown = uidropdown(app.QuantitativeTab);
+            app.Yaxis3DDropDown = uidropdown(app.PostProcessingTab);
             app.Yaxis3DDropDown.Position = [215 251 175 22];
 
             % Create XaxisDropDownLabel
-            app.XaxisDropDownLabel = uilabel(app.QuantitativeTab);
+            app.XaxisDropDownLabel = uilabel(app.PostProcessingTab);
             app.XaxisDropDownLabel.HorizontalAlignment = 'right';
             app.XaxisDropDownLabel.Position = [73 313 60 22];
             app.XaxisDropDownLabel.Text = 'X-axis';
 
             % Create XaxisDropDown
-            app.XaxisDropDown = uidropdown(app.QuantitativeTab);
+            app.XaxisDropDown = uidropdown(app.PostProcessingTab);
             app.XaxisDropDown.Position = [213 313 175 22];
 
             % Create SelectResultsCtrlorShiftClicktoSelectMultiplePanel
