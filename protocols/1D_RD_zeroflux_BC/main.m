@@ -3,7 +3,7 @@ initialize_chem_params
 rhs = pdepe_fun();
 ic_fun = pdepe_ic();
 
-Ttot=1e3;
+Ttot=5e3;
 Xmax=5;
 t_samples=linspace(0,Ttot,5e2);
 xmesh=linspace(0,Xmax,5e2);

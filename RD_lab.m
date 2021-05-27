@@ -115,16 +115,11 @@ classdef RD_lab < matlab.apps.AppBase
         
         function checkModelDirectory(app)
             global RD_base
-            try
-                if ~isempty(ls(strcat(RD_base,'_',app.model)))
-                    app.OpenDirectoryButton.Enable=true;
-                else
-                    app.OpenDirectoryButton.Enable=false;
-                end
-            catch
+            if ~isempty(ls(strcat(RD_base,'_',app.model)))
+                app.OpenDirectoryButton.Enable=true;
+            else
                 app.OpenDirectoryButton.Enable=false;
             end
-            
         end
         
         
@@ -264,6 +259,7 @@ classdef RD_lab < matlab.apps.AppBase
             if isempty(app.active_model) || strcmp(app.model,'None')
                 msgbox('Invalid Command: Please deploy a model first.')
             else
+                mk_protocol_files();
                 if app.SaveResultsCheckBox.Value
                     if isempty(app.FilenameEditField.Value)
                         [fn,path]=uiputfile('*.mat','Save Filename',strcat(results_dir(),protocol,'.mat'));
@@ -274,6 +270,8 @@ classdef RD_lab < matlab.apps.AppBase
                 else
                     mk_fun('main');
                 end
+                clear main_func
+                disp(['Running ' protocol '...'])
                 main_func()
             end
             

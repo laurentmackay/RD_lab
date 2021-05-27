@@ -1,9 +1,9 @@
 function main_func()
-N_species = 5;
-N_rx = 8;
-D = [0  0  0  0  0];
-N_slow = 5;
-chems={'Ru','L','Rb','Du','Db'};
+N_species = 2;
+N_rx = 2;
+D = [0.25        0.02];
+N_slow = 2;
+chems={'Raci','Rac'};
 
 
 
@@ -12,7 +12,7 @@ chems={'Ru','L','Rb','Du','Db'};
 rhs = pdepe_fun();
 ic_fun = pdepe_ic();
 
-Ttot=1e3;
+Ttot=5e3;
 Xmax=5;
 t_samples=linspace(0,Ttot,5e2);
 xmesh=linspace(0,Xmax,5e2);

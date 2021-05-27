@@ -1963,23 +1963,15 @@ fwrite(fid,[repelem(newline,4)  newline], 'char');
 fclose(fid);
 clear initialize_chem_params
 
-extra_files=dir(strcat(RD_base,'protocols',filesep,protocol,filesep,'rxn_files',filesep,'*.m'));
-extra_files = {extra_files.name};
-if ~isempty(extra_files)
-    rxn_files_path=strcat(RD_base,'protocols',filesep,protocol,filesep,'rxn_files',filesep);
-    addpath(rxn_files_path);
-    
-    M=struct();
-    M.chems = chems;
-    M.is_fast = is_fast;
-    
-    for file=extra_files
-        file = regexprep(file{1},'\..*','');
-        eval([file '(str,M,save_dir)']);
-    end
-    
-    rmpath(rxn_files_path);
-end
+M=struct();
+M.chems = chems;
+M.is_fast = is_fast;
+M.str = str;
+
+save(strcat(save_dir,filesep,'model.mat'),'M','str');
+
+mk_protocol_files()
+
 disp(strcat("Done Deploying ",f,"."))
 end
 

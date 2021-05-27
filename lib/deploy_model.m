@@ -30,7 +30,7 @@ elseif force || ~strcmp(active_model,fn)
 end
 
 
-hash_file = strcat(work_dir,filesep,'model.hash');
+hash_file = strcat(work_dir,'model.hash');
 hash = dir(strcat(RD_base,'models',filesep,f)).date;
 %check the model-description hash to see if it has changed
 if force || isempty(dir(hash_file)) || strcmp(fileread(hash_file), hash)
