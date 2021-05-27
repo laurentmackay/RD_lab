@@ -218,7 +218,8 @@ if ~isempty(par_defs)
     pars=[pars{:}];
     pars=[pars{:}];
     
-    par_vals =      regexp(par_defs,[name(2:end-1) '(?:[ \t\f]*)?=([^\,\;\n\r]+)'], 'tokens' );
+    
+    par_vals = regexp(strjoin(par_defs,', '),strcat('(?<![A-Za-z0-9])',pars,'(?:[ \t\f]*)?(?:\=[^\,\;\n\r]+)*=([^\,\;\n\r]+)'),'tokens');
     par_vals = [par_vals{:}];
     par_vals = [par_vals{:}];
     
@@ -454,8 +455,9 @@ for i=1:N_con
     
 end
 
-consrv_nm = [consrv_nm strcat('cnsrv_',string(1:N_con-size(lcon_user,2)))] ;
-
+if N_con-size(lcon_user,2)>0
+    consrv_nm = [consrv_nm cellstr(strcat('cnsrv_',string(1:N_con-size(lcon_user,2))))] ;
+end
 
 if ~isempty(consrv_nm)
     eval(['syms ' char(strjoin(consrv_nm,' '))]);
@@ -609,6 +611,7 @@ else
     sol_rhs = struct2cell(sol_consrv);
     consrv_subs = cell2sym(struct2cell(sol_consrv));
     sol_consrv = struct2cell(sol_consrv);
+
 end
 
 % fast_eqns
@@ -665,7 +668,9 @@ else
     sol_consrv = sym2cell(simplify(cell2sym(struct2cell(sol_consrv)),'Steps',100));
 end
 
-
+if isempty(sol_consrv)
+    sol_consrv={};
+end
 
 
 slow_refs = strcat('(?<=(?:^|[',code,']))(',chems(~is_fast_elim),')(?=(?:$|[',code,']))')';
@@ -902,12 +907,16 @@ end
 
 
 %% setting up the liner system to determine reactions rates
+% S_closed = S_tot(:,sum(abs(S_tot),1)>1);
 
-lcon_fast_0 = lcon(is_fast_elim,:);
-
+if ~isempty(lcon)
+    lcon_fast_0 = lcon(is_fast_elim,:);
+else
+    lcon_fast_0=[];
+end
 i_con_fast = any(lcon_fast_0 > 0,1);
 
-N_con_fast = nnz(i_con_fast);
+N_con_fast = N_fast_eqn;
 
 % m0 = sym('m0', [N_con_fast N_slow]);
 
@@ -922,19 +931,27 @@ end
 m11=j_gam;
 
 lcon_fast=lcon_fast_0(:,i_con_fast);
-lmix = lcon(~is_fast_elim,i_con_fast)';
-lslow_0 = lcon(~is_fast_elim,~i_con_fast)';
+if ~isempty(lcon)
+    lmix = lcon(~is_fast_elim,i_con_fast)';
+    l_sf=sym(lmix(1:N_fast_eqn,:));
+    lslow_0 = lcon(~is_fast_elim,~i_con_fast)';
+else
+    lmix=[];
+    l_sf=[];
+    lslow_0=[];
+end
+
 % for i=1:N_con_fast
 %     con_fast=lcon_fast(:,i)~=0;
 %     if any(con_fast)
 %         m0(i,:)=lmix(i,:)+sum(J_gamma(con_fast,:),1);
 %     end
 % end
-is_fast
-l_sf=sym(lmix(1:N_con_fast,:));
+
+
 scQSSA=0;
 if scQSSA
-    for i=1:N_con_fast
+    for i=1:N_fast_eqn
         l_sf(i,:)=l_sf(i,:)+sum((lcon_fast(:,i)'.*j_gam')',1);
     end
 end
@@ -959,13 +976,14 @@ eye_slow_0 = eye_slow_0(~any(i_non_fast(is_solo) == find(ind)',2),:);
 A_mat=[lslow_0; eye_slow_0]';
 [A_rref,p_A]=rref(A_mat);
 A_li_rows = A_mat(:,p_A)';
-if size(A_li_rows,1)+N_con_fast>N_slow
-    A_li_rows=A_li_rows(1:N_slow-N_con_fast,:);
-elseif size(A_li_rows,1)+N_con_fast<N_undetermined
+if size(A_li_rows,1)+N_fast_eqn>N_slow
+    A_li_rows=A_li_rows(1:N_slow-N_fast_eqn,:);
+elseif size(A_li_rows,1)+N_fast_eqn<N_undetermined
     error('Underdetermined slow sub-system, try removing some fast reactions.')
 end
 
 mask_slow_0 = sum(A_li_rows~=0,2)==1;
+mask_slow_1 = sum(A_li_rows~=0,1)==1;
 
 % i_non_fast = find(~is_fast);
 mask_non_elim = any(i_non_fast==find(~is_elim)',1);
@@ -977,13 +995,13 @@ i_0 = mod(find(A_li_rows(mask_slow_0,:)')-1,N_undetermined)'+1;
 ij_slow = mod(find(A_li_rows(mask_slow_0,:)')-1,N_undetermined)+1;
 f__0 = eval([ '[' strjoin(strcat('f_', chems )) ']']);
 b__0 =  eval([ '[' strjoin(strcat('f_', chems(~is_fast_elim) )) ']']);
-
+b__00 =  eval([ '[' strjoin(strcat('f_', chems )) ']']);
 b__0(:) =  0;
 inds= i_non_fast(ij_slow);
 b__0(mask_slow_0) = f__0(inds);
 
 project=true;
-if project
+if project && size(l_sf,1)+size(A_li_rows,1) == size(A_li_rows,2)
     
     f_mix = [A_li_rows;l_sf]\[b__0]';
     % f_mix2 = eval(['[m10;m0]\[' strjoin( f_slow,'; ') ';' strjoin(cellstr(string(zeros(1,size(J_gamma,1)))),'; ')  ']']);
@@ -1107,9 +1125,12 @@ for i=1:size(S_,2)
 end
 c=0;
 
-
 consrv_refs = strcat('(?<=(?:^|[\+\- \*\(]))(',elim_con,')(?=(?:$|[\+\- \*\.\)\^]))')';
-consrv_reps = cellfun(@(x) strcat("(",x,")"),  string(sol_consrv));
+if ~isempty(sol_consrv)
+    consrv_reps = cellfun(@(x) strcat("(",x,")"),  string(sol_consrv));
+else
+    consrv_reps={};
+end
 rates_consrv = regexprep(rates_naive,consrv_refs,consrv_reps);
 
 fid=fopen(strcat(save_dir,filesep, f,'.rxns'),'w');
@@ -1456,6 +1477,7 @@ clear model_anon
 % elim_con_elim = subs(sol_consrv,str2sym(elim),cell2sym(sol_fast))
 % f_mix_elim = simplify(subs(f_mix_elim,str2sym([elim; elim_con']),cell2sym(sol_rhs)),'steps',10);
 % ode_body_elim = cellfun(@(x) strjoin(x,newline),ode_body_elim(~cellfun(@isempty,ode_body_elim)), 'UniformOutput',0);
+
 arrayfun(@(e) disp(strcat("Eliminating: ",e)),strcat(elim_con'," = ",string(sol_consrv)));
 
 % cellfun(@(e) disp(['Eliminating: ' e]),elim_defs)
