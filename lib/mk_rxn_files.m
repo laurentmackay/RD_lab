@@ -207,7 +207,7 @@ model_par_vals = cellstr(repmat("0.0",1,length(model_pars)));
 if ~isempty(par_defs)
     par_defs=[par_defs{:}];
     
-    par_default = regexp(par_defs,'\*(?:[ \t\f]*)?=([^\,\;]+)', 'tokens' );
+    par_default = regexp(par_defs,'\*(?:[ \t\f]*)?=([^\,\;\r\n]+)', 'tokens' );
     par_default = par_default{1};
     
     if ~isempty(par_default)
