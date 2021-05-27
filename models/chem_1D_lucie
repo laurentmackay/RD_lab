@@ -40,6 +40,6 @@ Rac(0) = 0
 
 
 % initial conditions for the "induced" region
-% Rac(0,induced)=0.3
+Rac(0,induced)=0.6
 
-% LPA_global(Raci)
+LPA_global(Raci)

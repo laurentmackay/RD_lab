@@ -19,8 +19,8 @@ B_R=(B_0/0.3)*(.18/.13)*h^2; %chemical potential rac
 %(defined such that they have no net effect at the saddle)
 
 
-a=A; %ideal area      values from abira
-per=Per*(1 + (sqrt(2)-1)/2); %ideal permiter       values from abira 128 for perfect circle data 295
+a_cpm_target=A; %ideal area      values from abira
+per_cpm_target=Per*(1 + (sqrt(2)-1)/2); %ideal permiter       values from abira 128 for perfect circle data 295
 Hb=0; %membranes resistance to movement
 T=0.5; %"temperture" strength of noise
 
@@ -29,7 +29,7 @@ T=0.5; %"temperture" strength of noise
 
 
 
-H0=lam_a*(a-A)^2+lam_p*(per-Per)^2+J*Per; % the hamiltonian
+H0=lam_a*(a_cpm_target-A)^2+lam_p*(per_cpm_target-Per)^2+J*Per; % the hamiltonian
 dH_chem=0; %initial chemotactic contribution to the hamiltonian
 
 grow_count=0;

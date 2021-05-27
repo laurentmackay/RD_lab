@@ -27,9 +27,9 @@ j=[ vox(:)';  jump(row)';];
 Delta=repmat([-1/h; +1/h],N_ind,1);
 u_x = sparse(i,j,Delta,numel(interior),sz);
 
-[i2,j2,v ] = find(u_x);
+[i2,j2,v_ ] = find(u_x);
 i2=mod(i2-1,sz)+1;
-u_xx = sparse(i2,j2,v/h,sz,sz);
+u_xx = sparse(i2,j2,v_/h,sz,sz);
 
 %system reduction
 u_xx=u_xx(cell_inds(1:A),cell_inds(1:A));

@@ -611,7 +611,7 @@ else
     sol_rhs = struct2cell(sol_consrv);
     consrv_subs = cell2sym(struct2cell(sol_consrv));
     sol_consrv = struct2cell(sol_consrv);
-
+    
 end
 
 % fast_eqns
@@ -737,22 +737,22 @@ end
 if nnz(missing_init)>0
     
     if nnz(missing_init)>size(consrv_eqns,1) || ~all(any(consrv_deps_missing,1))
-
+        
         error(['Undetermined system of initial conditions:' newline int2str(nnz(missing_init)) ' unspecified initial condition(s), with only ' int2str(nnz(any(consrv_deps_missing,2))) ' relevant conservation equation(s) detected and ' int2str(nnz(~missing_init)) ' initial conditions provided.'])
     end
     
     consrv_eqns_init =  subs(consrv_eqns,str2sym([chems(~missing_init) chems(N_slow+1:end) ]),str2sym([slow_init_reps(~missing_init) fast_init_reps']));
     consrv_eqns_init = subs(consrv_eqns_init(any(consrv_deps_missing,2)),str2sym(model_pars_tot),str2sym(model_par_vals_tot));
-%     init_sol=cell2sym(cell(1,nnz(missing_init)));
+    %     init_sol=cell2sym(cell(1,nnz(missing_init)));
     chems_missing_init = str2sym(chems(missing_init));
-%     for i_=1:length(chems_missing_init)
-%         init_sol(i_) = solve(consrv_eqns_init,chems_missing_init(i_));
-%         if ~isempty(init_sol(i_))
-%             consrv_eqns_init = subs(consrv_eqns_init,chems_missing_init(i_), init_sol(i_))
-%         else
-%             error(['Could not determine an intial condition for the following species:' sym2str(chems_missing_init(i_))])
-%         end
-%     end
+    %     for i_=1:length(chems_missing_init)
+    %         init_sol(i_) = solve(consrv_eqns_init,chems_missing_init(i_));
+    %         if ~isempty(init_sol(i_))
+    %             consrv_eqns_init = subs(consrv_eqns_init,chems_missing_init(i_), init_sol(i_))
+    %         else
+    %             error(['Could not determine an intial condition for the following species:' sym2str(chems_missing_init(i_))])
+    %         end
+    %     end
     
     init_sol =  solve(consrv_eqns_init,chems_missing_init);
     if nnz(missing_init)>1
@@ -769,7 +769,7 @@ if nnz(missing_init)>0
         error(['Please specify some initial condtions for following species: ' strjoin(chems(ismissing(init(~is_fast_elim))),', ')])
     end
     
-
+    
 end
 
 
@@ -1435,7 +1435,7 @@ clear eval_model
 
 
 if ~isempty(consrv_nm(N_con_user+1:end))
-
+    
     consrv_assgn = cellfun(@(nm,v) [nm '=' v],cellstr(consrv_nm(N_con_user+1:end)'), consrv_defs_init(N_con_user+1:end),'UniformOutput',false);
 else
     consrv_assgn = {};
@@ -1718,8 +1718,11 @@ if self_contained
             
             i_eqn = any(~cell2mat(cellfun(@(c) isAlways(diff(consrv_eqn_induced, str2sym(c))), chems(~is_induced & ~is_fast) , 'UniformOutput', false)),2);
             eqns_reduced = subs(consrv_eqn_induced(i_eqn),str2sym(model_pars), str2sym(model_par_vals));
-            sol_init_induced = struct2cell(solve(eqns_reduced, str2sym(chems(~is_induced & ~is_fast))));
-            
+            if length(i_eqn)>1
+                sol_init_induced = struct2cell(solve(eqns_reduced, str2sym(chems(~is_induced & ~is_fast))));
+            else
+                sol_init_induced = sym2cell(solve(eqns_reduced, str2sym(chems(~is_induced & ~is_fast))));
+            end
             if any(cellfun(@length, sol_init_induced)==0)
                 error(['Failed to solve for atleast one of the following species in the induced region: ' strjoin(chems(~is_induced & ~is_fast))])
             end
@@ -1846,8 +1849,12 @@ if self_contained
         
         
         warning ('off','symbolic:solve:SolutionsDependOnConditions');
-        c = struct2cell(solve(ec0, LPA_reps));
-        sol_LPA_globals = [c{:}];
+        if length(LPA_reps)>1
+            c = struct2cell(solve(ec0, LPA_reps));
+            sol_LPA_globals = [c{:}];
+        else
+            sol_LPA_globals = solve(ec0, LPA_reps);
+        end
         warning ('on','symbolic:solve:SolutionsDependOnConditions');
         
         sol_LPA_globals(ic0) = subs(sol_LPA_globals(ic0), str2sym([model_vars LPA_locals]), str2sym(strcat([model_vars LPA_locals], '_global')));

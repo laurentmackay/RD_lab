@@ -1,12 +1,5 @@
-model_name = 'chem_Rx_Pax_Asheesh';
-% model_name = 'chem_DAKA';
-
 plotting=usejava('desktop') && isempty(getCurrentTask());
-try
-    nargin;
-catch
-    deploy_model(model_name);
-end
+
 
 
 if plotting %do not display pictures when running in parallel...i.e., on the cluster

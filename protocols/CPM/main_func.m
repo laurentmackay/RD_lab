@@ -1,12 +1,6 @@
 function main_func()
-model_name = 'chem_Rx_Pax_Asheesh';
-
 plotting=usejava('desktop') && isempty(getCurrentTask());
-try
-    nargin;
-catch
-    deploy_model(model_name);
-end
+
 
 
 if plotting 
@@ -252,7 +246,7 @@ PaxRatio=[PaxRatio_u; PaxRatio_i];
 
 
 
-ic = [];
+ic = [0.4 0.6];
 mask=induced_mask&cell_mask;
 [tmp,tmp2]=meshgrid((0:N_species-1)*sz,find(mask));
 i_induced=tmp+tmp2;
@@ -305,8 +299,8 @@ B_rho=(B_0/0.3)*h^2;
 B_R=(B_0/0.3)*(.18/.13)*h^2; 
 
 
-a=A; 
-per=Per*(1 + (sqrt(2)-1)/2); 
+a_cpm_target=A; 
+per_cpm_target=Per*(1 + (sqrt(2)-1)/2); 
 Hb=0; 
 T=0.5; 
 
@@ -315,7 +309,7 @@ T=0.5;
 
 
 
-H0=lam_a*(a-A)^2+lam_p*(per-Per)^2+J*Per; 
+H0=lam_a*(a_cpm_target-A)^2+lam_p*(per_cpm_target-Per)^2+J*Per; 
 dH_chem=0; 
 
 grow_count=0;
@@ -499,9 +493,9 @@ j=[ vox(:)';  jump(row)';];
 Delta=repmat([-1/h; +1/h],N_ind,1);
 u_x = sparse(i,j,Delta,numel(interior),sz);
 
-[i2,j2,v ] = find(u_x);
+[i2,j2,v_ ] = find(u_x);
 i2=mod(i2-1,sz)+1;
-u_xx = sparse(i2,j2,v/h,sz,sz);
+u_xx = sparse(i2,j2,v_/h,sz,sz);
 
 u_xx=u_xx(cell_inds(1:A),cell_inds(1:A));
 
@@ -645,7 +639,7 @@ is_discrete = all(mod(x(cell_inds(1:A)),1)==0);
         
         Per=perim(cell_maskp); 
         A=nnz(cell_maskp); 
-        HA=lam_a*(a-A)^2+lam_p*(per-Per)^2+J*Per; 
+        HA=lam_a*(a_cpm_target-A)^2+lam_p*(per_cpm_target-Per)^2+J*Per; 
         dH=HA-H0;
         no_holes = getfield(bwconncomp(cell_maskp,4),'NumObjects')==1 && getfield(bwconncomp(~cell_maskp,4),'NumObjects')==1 ;
         if ~no_holes

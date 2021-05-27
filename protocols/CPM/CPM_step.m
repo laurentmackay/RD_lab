@@ -42,7 +42,7 @@ if all(isfinite([lam_a,lam_p]))
         
         Per=perim(cell_maskp); % perimeter
         A=nnz(cell_maskp); % area
-        HA=lam_a*(a-A)^2+lam_p*(per-Per)^2+J*Per; % the hamiltonian after the possible change
+        HA=lam_a*(a_cpm_target-A)^2+lam_p*(per_cpm_target-Per)^2+J*Per; % the hamiltonian after the possible change
         dH=HA-H0;
         no_holes = getfield(bwconncomp(cell_maskp,4),'NumObjects')==1 && getfield(bwconncomp(~cell_maskp,4),'NumObjects')==1 ;%makes sure the cell stays connected and no hole
         if ~no_holes
