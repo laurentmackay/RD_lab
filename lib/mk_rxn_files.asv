@@ -440,7 +440,6 @@ N_chem = length(chems);
 N_fast = nnz(is_fast);
 N_fast_eqn = length(fast_eqns);
 N_slow = length(chems)-N_fast;
-N_undetermined = N_chem-N_fast_eqn;
 % N_elim_0 = length(elim);
 
 p_elim_con={};
@@ -544,7 +543,7 @@ is_fast_elim = cellfun(@(x)any(strcmp(elim_fast,x)),chems);
 
 
 
-p_elim = cellfun(@(pe) intersect(pe,chems(~is_fast_elim),'stable'),p_elim_con,'UniformOutput',0);
+p_elim = cellfun(@(pe) intersect(pe,chems(~is_fast),'stable'),p_elim_con,'UniformOutput',0);
 p_elim = p_elim_con;
 if ~isempty(consrv_eqns)
     eqns = sym2cell(consrv_eqns);
@@ -668,15 +667,15 @@ end
 
 
 
-slow_refs = strcat('(?<=(?:^|[',code,']))(',chems(~is_fast_elim),')(?=(?:$|[',code,']))')';
+slow_refs = strcat('(?<=(?:^|[',code,']))(',chems(~is_fast),')(?=(?:$|[',code,']))')';
 fast_refs = strcat('(?<=(?:^|[',code,']))(',chems(is_fast_elim),')(?=(?:$|[',code,']))')';
 consrv_rhs = regexprep(string(consrv_eqns),'^.*==','');
 consrv_rhs_elim = regexprep(string(ec0),'^.*==','');
 
 
 
-slow_init_reps = cellstr(string(init(~is_fast_elim)));
-con_fast = cellfun(@(x) any(strcmp(x,elim_fast)),elim_con);
+slow_init_reps = cellstr(string(init(~is_fast)));
+con_fast = cellfun(@(x) any(strcmp(x,fast_chems)),elim_con);
 
 
 if length(sol_consrv)>1
@@ -708,12 +707,12 @@ end
 %
 % consrv_rhs_elim = string(sol_consrv_elim);
 
-missing_init = ismissing(init(~is_fast_elim));
+missing_init = ismissing(init(~is_fast));
 ind_missing= find(missing_init);
 consrv_deps_missing = ~cell2mat(cellfun(@(x) isAlways(diff(consrv_eqns,str2sym(x))),chems(missing_init),'UniformOutput',false));
 
 
-if N_fast_eqn>0
+if N_fast>0
     sol_fast_1 = subs(subs(cell2sym(sol_fast_0)), str2sym(chems(~missing_init)), str2sym(slow_init_reps(~missing_init)));
     %     sol_fast_1 = subs(subs(sol_fast_1), str2sym(elim_con'), subs(cell2sym(sol_consrv)));
     %     subs(subs(sol_fast_1), str2sym(consrv_nm'), subs(sol_consrv_elim))
@@ -756,12 +755,12 @@ if nnz(missing_init)>0
     
     init(missing_init)=string(init_sol);
     fast_init_reps = cellstr(string(subs(str2sym(fast_init_reps),str2sym(chems),str2sym(init))));
-    init(is_fast_elim) = fast_init_reps;
+    init(is_fast) = fast_init_reps;
     slow_init_reps(missing_init)=cellstr(string(init_sol));
     
     
     if any(isempty(init_sol))
-        error(['Please specify some initial condtions for following species: ' strjoin(chems(ismissing(init(~is_fast_elim))),', ')])
+        error(['Please specify some initial condtions for following species: ' strjoin(chems(ismissing(init(~is_fast))),', ')])
     end
     
 
@@ -784,8 +783,8 @@ par_eqn = str2sym(model_pars');
 par_val_eqn = str2sym(model_par_vals);
 consrv_nm_eqn = str2sym(consrv_nm');
 consrv_val_eqn = str2sym(consrv_defs_init);
-chem_eqn = str2sym(chems(~is_fast_elim));
-init_eqn = str2sym(init(~is_fast_elim));
+chem_eqn = str2sym(chems(~is_fast));
+init_eqn = str2sym(init(~is_fast));
 
 for i=1:length(sol_consrv)
     if length(sol_consrv{i})>1
@@ -853,11 +852,11 @@ i=0;
 % [Gamma_simp,sigma__rep] = subexpr(Gamma_simp,nm);
 
 %% COMPUTING J_GAMMA
-J_gamma=arrayfun(@(gi) cellfun(@(j) simplify(diff(gi,j),'Steps',10),{chems{~is_fast_elim}},'UniformOutput',0),Gamma_0,'UniformOutput',false)';
+J_gamma=arrayfun(@(gi) cellfun(@(j) simplify(diff(gi,j),'Steps',10),{chems{~is_fast}},'UniformOutput',0),Gamma_0,'UniformOutput',false)';
 if ~isempty(J_gamma)
     J_gamma = [J_gamma{:}];
     J_gamma = [J_gamma{:}];
-    J_gamma=reshape(J_gamma,[N_undetermined,size(Gamma,1)])';
+    J_gamma=reshape(J_gamma,[N_slow,size(Gamma,1)])';
 end
 J_gamma_0 = J_gamma;
 %
@@ -911,7 +910,7 @@ N_con_fast = nnz(i_con_fast);
 
 % m0 = sym('m0', [N_con_fast N_slow]);
 
-j_gam = sym('J_gamma_', [N_fast_eqn N_undetermined]);
+j_gam = sym('J_gamma_', [N_fast N_slow]);
 if ~isempty(J_gamma)
     %     m0( J_gamma == 0 )=0;
     
@@ -961,7 +960,7 @@ A_mat=[lslow_0; eye_slow_0]';
 A_li_rows = A_mat(:,p_A)';
 if size(A_li_rows,1)+N_con_fast>N_slow
     A_li_rows=A_li_rows(1:N_slow-N_con_fast,:);
-elseif size(A_li_rows,1)+N_con_fast<N_undetermined
+elseif size(A_li_rows,1)+N_con_fast<N_slow
     error('Underdetermined slow sub-system, try removing some fast reactions.')
 end
 
@@ -971,12 +970,12 @@ mask_slow_0 = sum(A_li_rows~=0,2)==1;
 mask_non_elim = any(i_non_fast==find(~is_elim)',1);
 % i_slow_0 = i_non_fast(mask_slow_0);
 
-i_0 = mod(find(A_li_rows(mask_slow_0,:)')-1,N_undetermined)'+1;
+i_0 = mod(find(A_li_rows(mask_slow_0,:)')-1,N_slow)'+1;
 
 
-ij_slow = mod(find(A_li_rows(mask_slow_0,:)')-1,N_undetermined)+1;
+ij_slow = mod(find(A_li_rows(mask_slow_0,:)')-1,N_slow)+1;
 f__0 = eval([ '[' strjoin(strcat('f_', chems )) ']']);
-b__0 =  eval([ '[' strjoin(strcat('f_', chems(~is_fast_elim) )) ']']);
+b__0 =  eval([ '[' strjoin(strcat('f_', chems(~is_fast) )) ']']);
 
 b__0(:) =  0;
 inds= i_non_fast(ij_slow);
@@ -989,7 +988,7 @@ if project
     % f_mix2 = eval(['[m10;m0]\[' strjoin( f_slow,'; ') ';' strjoin(cellstr(string(zeros(1,size(J_gamma,1)))),'; ')  ']']);
     
 else
-    f_mix = f__0(~is_fast_elim)';
+    f_mix = f__0(~is_fast)';
     
 end
 
@@ -1161,7 +1160,7 @@ end
 fwrite(fid,[newline newline],'char');
 
 % f_slow={};
-for chem_ind = find(~is_fast_elim)
+for chem_ind = find(~is_fast)
     %     chem_ind = find(m10(i,:),1);
     S_chem = S_(chem_ind,:);
     inds = find(S_chem);
@@ -1463,9 +1462,9 @@ arrayfun(@(e) disp(strcat("Eliminating: ",e)),strcat(elim_con'," = ",string(sol_
 f_mix_ode = subs(f_mix_explicit, str2sym(elim_con'), sol_consrv);
 % f_mix_elim_ode = subs(f_mix_elim, str2sym(elim_con'), sol_consrv);
 is_elim_con0 = cellfun(@(c) any(strcmp(c,elim_con)),chems);
-is_elim_con = is_elim_con0(~is_fast_elim);
+is_elim_con = is_elim_con0(~is_fast);
 
-ode_body_elim = char(strjoin(strcat('d',chems(~is_elim_con0 & ~is_fast_elim),'/dt=',string(f_mix(~is_elim_con))'),newline));
+ode_body_elim = char(strjoin(strcat('d',chems(~is_elim_con0 & ~is_fast),'/dt=',string(f_mix(~is_elim_con))'),newline));
 
 ode_body_elim=regexprep(ode_body_elim,'\.\*','\*');
 
@@ -1550,13 +1549,13 @@ fclose(fid);
 
 
 
-chem_ref_elim=cellfun(@(x) ref(x),chems(~is_elim_con0 & ~is_fast_elim),'UniformOutput',0);
+chem_ref_elim=cellfun(@(x) ref(x),chems(~is_elim_con0 & ~is_fast),'UniformOutput',0);
 % chem_rep_elim=arrayfun(@(i) ['$<pre>x\(vox+' num2str(i-1) '*sz\)$<post>'],1:length(chems(~is_elim_con)),'UniformOutput',0);
 
 
 %  fast_eqns = subs(fast_eqns, str2sym(elim_con'), consrv_subs);
 
-chem_rep_FVM_elim=arrayfun(@(i) ['$<pre>u\(:,' num2str(i) '\)$<post>'],1:length(chems(~is_elim_con0 & ~is_fast_elim)),'UniformOutput',0);
+chem_rep_FVM_elim=arrayfun(@(i) ['$<pre>u\(:,' num2str(i) '\)$<post>'],1:length(chems(~is_elim_con0 & ~is_fast)),'UniformOutput',0);
 
 rxn_body_elim = [strjoin([model_defs'; rates_chem'; sigma__reps'; predefs'; sigma2__reps';],[';' newline])...
     ';' newline newline ['Rx = [' char(strjoin(string(f_mix_ode(~is_elim_con)),[',...' newline])) '];']];
@@ -1625,7 +1624,7 @@ fclose(fid);
 
 
 
-init_sym = subs(subs(str2sym(init)), str2sym([chems(~is_fast_elim) chems(is_fast_elim)]), str2sym([slow_init_reps, fast_init_reps']));
+init_sym = subs(subs(str2sym(init)), str2sym([chems(~is_fast) chems(is_fast)]), str2sym([slow_init_reps, fast_init_reps']));
 
 init_vals = double(subs(init_sym(~ismissing(init)),str2sym(model_pars_tot),str2sym(par_reps)));
 % init_vals = eval(strcat("[",strjoin(regexprep(string(init_vals),par_refs,par_reps)),"]"));
@@ -1646,7 +1645,7 @@ warning ('on','symbolic:sym:isAlways:TruthUnknown');
 
 if self_contained
     
-    is_ode = ~is_elim_con0 & ~is_fast_elim;
+    is_ode = ~is_elim_con0 & ~is_fast;
     
     % ic_ode=init_vals(~is_fast);
     ic_ode=init_vals(is_ode);
@@ -1661,13 +1660,13 @@ if self_contained
     
     
     fp=init;
-    fp(~is_elim_con0 & ~is_fast_elim)=num2str(ic_ode',12);
+    fp(~is_elim_con0 & ~is_fast)=num2str(ic_ode',12);
     sol_consrv_ic = subs(sol_consrv, str2sym(chems(is_ode)), ic_ode);
     fp(is_elim_con0) = subs(str2sym(elim_con)',str2sym(elim_con)' ,subs(subs(sol_consrv_ic),consrv_nm_eqn,consrv_val_eqn));
     fp(is_elim_con0) = regexprep(fp(is_elim_con0), par_refs, par_reps);
     fp(is_elim_con0) = regexprep(fp(is_elim_con0),  nameref(chems(is_ode)), string(ic_ode));
-    fp(is_fast_elim) = regexprep(string(subs(cell2sym(sol_fast))),nameref(chems(~is_fast_elim)),fp(~is_fast_elim));
-    fp(is_fast_elim) = regexprep(fp(is_fast_elim), par_refs, par_reps);
+    fp(is_fast) = regexprep(string(subs(cell2sym(sol_fast))),nameref(chems(~is_fast)),fp(~is_fast));
+    fp(is_fast) = regexprep(fp(is_fast), par_refs, par_reps);
     fp = eval(strcat('[',strjoin(fp),']'));
     t1=toc(t0);
     fprintf(['Done (' num2str(t1) ' seconds elapsed, final time = ' num2str(T_vec(end)) ')' newline]);
@@ -1682,7 +1681,7 @@ if self_contained
     
     warning ('off','symbolic:solve:SolutionsDependOnConditions');
     
-    consrv_eqn_fast = subs(consrv_eqns, [str2sym(elim_fast); consrv_nm_eqn], [cell2sym(sol_fast_0); consrv_val_eqn]);
+    consrv_eqn_fast = subs(consrv_eqns, [str2sym(fast_chems); consrv_nm_eqn], [cell2sym(sol_fast_0); consrv_val_eqn]);
     
     init_induced = getInitialConditions(f0,chems,'induced');
     is_induced = ~ismissing(init_induced);

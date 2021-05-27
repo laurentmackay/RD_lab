@@ -333,7 +333,7 @@ classdef RD_lab < matlab.apps.AppBase
                 model_results = cellfun(@(x,i) x(i), model_results,is_file,'UniformOutput',0);
             
                 app.ModelsTree.Children.delete();
-                cellfun(@(x,y) uitreenode(app.ModelsTree,'Text',x, 'NodeData', y),['<None>'; models],[{''}; model_results]);
+%                 cellfun(@(x,y) uitreenode(app.ModelsTree,'Text',x, 'NodeData', y),['<None>'; models],[{''}; model_results]);
 
                 
                 experiments = cellstr(ls('experiments/*'));
@@ -374,7 +374,7 @@ classdef RD_lab < matlab.apps.AppBase
             selectedNodes = app.FilesTree.SelectedNodes;
             
             for node = selectedNodes'
-                if isempty(node.NodeData) && ischar(node.Parent.NodeData)
+                if hasfield(node,'NodeData') && (isempty(node.NodeData) && ischar(node.Parent.NodeData))
                     node.NodeData=whos('-file',strcat(node.Parent.NodeData,'/',node.Text));
                 end
             end

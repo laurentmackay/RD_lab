@@ -1,16 +1,16 @@
 
-Raci <->  Rac; Q_R, delta_R;
+Raci <-> Rac; Q_R, delta_R;
 Rhoi <-> Rho; Q_rho, delta_rho;
 Paxi <-> Paxs; Q_Ps, delta_P;
 Paxi <-> Paxt; Q_Pt, k2;
 
 FAK + Paxt <-> FP; k6, k7
 
-xFAK <-> FAK; k3, k4;
+xFAK <-> FAK; k3, k4; %openness
 
-RacPAK <-> Rac; alpha_PAK*K0/Rac_Square
-GPPP <-> GPP + Paxs; (k_G*k_X*k_C*GIT*PIX*PAKtot*K_is*(1+alpha_R*R))/Pax_Square
-xGPP + FAK <-> FAK + GPP; k8, k9
+RacPAK <-> Rac; alpha_PAK*K0/Rac_Square;
+GPP <-> Paxs; (k_G*k_X*k_C*GIT*PIX*PAKtot*K_is*(1+alpha_R*R))/Pax_Square;
+xGPP + FAK <-> FAK + GPP; k8, k9; % additional nonlinear inhibition or should add in the rate of GPP process
 
 R = Rac / Rac_Square;
 RhoRatio = Rho / Rho_Square;
@@ -66,4 +66,3 @@ xFAK(0) = 1
 FAK(0) = FP(0) = 0
 GPP(0) = 0
 xGPP(0) = 1
-
