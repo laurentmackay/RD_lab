@@ -12,6 +12,7 @@ classdef RD_lab < matlab.apps.AppBase
         ModelSpecificationTextArea     matlab.ui.control.TextArea
         SaveChangesButton              matlab.ui.control.Button
         OpenDirectoryButton            matlab.ui.control.Button
+        SaveonDeployCheckBox           matlab.ui.control.CheckBox
         ProtocolTab                    matlab.ui.container.Tab
         SelectProtocolDropDownLabel    matlab.ui.control.Label
         SelectProtocolDropDown         matlab.ui.control.DropDown
@@ -101,7 +102,8 @@ classdef RD_lab < matlab.apps.AppBase
         end
         
         function prots = getProtocols(app)
-            prots = dir("protocols/");
+            global RD_base
+            prots = dir(strcat(RD_base,"protocols/"));
             prots ={prots(arrayfun(@(x) x.name(1)~='.',prots)).name};
         end
         
@@ -124,10 +126,10 @@ classdef RD_lab < matlab.apps.AppBase
         
         
         function setProtocol(app,prot)
-            global protocol
+            global protocol RD_base
             set_protocol(prot)
             
-            main_path = strcat("protocols/",prot,'/main.m');
+            main_path = strcat(RD_base,"protocols/",prot,'/main.m');
             main = dir(main_path);
             app.protocol=prot;
             if ~isempty(main)
@@ -231,11 +233,11 @@ classdef RD_lab < matlab.apps.AppBase
             
             app.ProtocolVariableTable.ColumnName={'Variable','Value'};
             
-
             
-
             
-
+            
+            
+            
             
         end
 
@@ -281,23 +283,17 @@ classdef RD_lab < matlab.apps.AppBase
         function DeployModelButtonPushed(app, event)
             global active_model
             if ~isempty(app.model) && ~strcmp(app.model,'None')
+                if app.SaveonDeployCheckBox.Value
+                    app.saveModelText()
+                    app.SaveChangesButton.Enable=false;
+                end
                 
-                app.saveModelText()
-                app.ModelSpecificationTextArea.Editable=false;
-                app.SaveChangesButton.Enable=false;
-                disp('save changes has been disabled')
                 %                 try
                 deploy_model(app.model,1);
                 
                 app.active_model=app.model;
                 app.ModelLabel.Text=active_model;
-                app.checkModelDirectory()
-                app.background_saved=false;
-                %                 catch err
-                %                     rethrow(err)
-                %                 end
-                app.ModelSpecificationTextArea.Editable = true;
-                
+                app.checkModelDirectory()                
             end
         end
 
@@ -321,26 +317,27 @@ classdef RD_lab < matlab.apps.AppBase
         % Selection change function: TabGroup
         function TabGroupSelectionChanged(app, event)
             selectedTab = app.TabGroup.SelectedTab;
+            global RD_base
             if strcmp(selectedTab.Title,'Results Explorer')
-                models=cellstr(ls('_*'));
+                models=cellstr(ls(strcat(RD_base,'_*')));
                 model_results = cellfun(@(x) cellstr(ls(strcat(x,filesep,'results'))),models,'UniformOutput',0);
                 has_results = cellfun(@(x) ~isempty(x{1}), model_results);
                 
                 models = cellfun(@(x) x(2:end),models(has_results),'UniformOutput',0);
                 model_results=model_results(has_results);
-
+                
                 is_file = cellfun(@(x) cellfun(@(y) ~all(y=='.'),x),model_results,'UniformOutput',0);
                 model_results = cellfun(@(x,i) x(i), model_results,is_file,'UniformOutput',0);
-            
-                app.ModelsTree.Children.delete();
-%                 cellfun(@(x,y) uitreenode(app.ModelsTree,'Text',x, 'NodeData', y),['<None>'; models],[{''}; model_results]);
-
                 
-                experiments = cellstr(ls('experiments/*'));
+                app.ModelsTree.Children.delete();
+                cellfun(@(x,y) uitreenode(app.ModelsTree,'Text',x, 'NodeData', y),['<None>'; models],[{''}; model_results]);
+                
+                
+                experiments = cellstr(ls(strcat(RD_base,'experiments/*')));
                 is_dir  = cellfun(@(x) ~all(x=='.'),experiments);
                 experiments = experiments(is_dir);
                 
-                experiment_results = cellfun(@(x) cellstr(ls(strcat('experiments',filesep,x))),experiments,'UniformOutput',0);
+                experiment_results = cellfun(@(x) cellstr(ls(strcat(RD_base,'experiments',filesep,x))),experiments,'UniformOutput',0);
                 
                 is_file = cellfun(@(x) cellfun(@(y) ~all(y=='.'),x),experiment_results,'UniformOutput',0);
                 experiment_results = cellfun(@(x,i) x(i), experiment_results,is_file,'UniformOutput',0);
@@ -349,7 +346,7 @@ classdef RD_lab < matlab.apps.AppBase
                 
                 app.ExperimentsTree.Children.delete();
                 cellfun(@(x, y) uitreenode(app.ExperimentsTree,'Text',x,'NodeData',y),['<None>'; experiments],[{''}; experiment_results]);
-%                 app.ExperimentsListBox.Items=['<None>' experiments];
+                %                 app.ExperimentsListBox.Items=['<None>' experiments];
                 
                 
                 
@@ -359,53 +356,62 @@ classdef RD_lab < matlab.apps.AppBase
 
         % Selection changed function: ModelsTree
         function ModelsTreeSelectionChanged(app, event)
+            global RD_base
             selectedNodes = app.ModelsTree.SelectedNodes';
-            app.handleNewFileNodes(selectedNodes ,@(x) strcat('_',x,'/results'))
+            app.handleNewFileNodes(selectedNodes ,@(x) strcat(RD_base,'_',x,'/results'))
         end
 
         % Selection changed function: ExperimentsTree
         function ExperimentsTreeSelectionChanged(app, event)
+            global RD_base
             selectedNodes = app.ExperimentsTree.SelectedNodes';
-            app.handleNewFileNodes(selectedNodes, @(x) strcat('experiments/',x))
+            app.handleNewFileNodes(selectedNodes, @(x) strcat(RD_base, 'experiments/',x))
         end
 
         % Selection changed function: FilesTree
         function FilesTreeSelectionChanged(app, event)
             selectedNodes = app.FilesTree.SelectedNodes;
+            is_file = arrayfun(@(x) isempty(x.Children)  ,selectedNodes);
             
-            for node = selectedNodes'
-                if hasfield(node,'NodeData') && (isempty(node.NodeData) && ischar(node.Parent.NodeData))
-                    node.NodeData=whos('-file',strcat(node.Parent.NodeData,'/',node.Text));
+            selectedNodes=selectedNodes(is_file);
+            if ~isempty(selectedNodes)
+                for node = selectedNodes'
+                    if isempty(node.NodeData) && ischar(node.Parent.NodeData)
+                        node.NodeData=whos('-file',strcat(node.Parent.NodeData,'/',node.Text));
+                    end
                 end
-            end
-            
-            data={selectedNodes.NodeData};
-            names=cellfun(@(x) {x.name},data,'UniformOutput',false);
-            
-            [names_tot, ia, ic] = unique([names{:}],'stable');
-            if app.SharedVariablesOnlyCheckBox.Value
-                disp('this is going to be implemented later bro')
-            end
-            sizes = cellfun(@(nm,d) {d(index_B(names_tot,nm)).size}, names, data,'UniformOutput',0);
-            sizes_tot = cell(length(names_tot),1);
-            [sizes_tot{:}]=deal({});
-            jj = cellfun(@(nm) index_A(names_tot,nm), names, 'UniformOutput',0);
-            for i = 1:size(selectedNodes,1)
-                for k=1:length(jj{i})
-                    sizes_tot{jj{i}(k)}{end+1}=mat2str(sizes{i}{k});
-                end
-            end
-            sizes_tot = cellfun(@(sz) strjoin(unique(sz,'stable'), newline),sizes_tot,'UniformOutput',false);
-
-            
-            plot_flag = false(size(sizes_tot));
-            old_data  = app.ResultsVariableTable.Data;
-            if ~isempty(old_data)
                 
-                [~,i_intersect,i_old]=intersect(names_tot',old_data.Var1);
-                plot_flag(i_old)=old_data.plot_flag(i_intersect);
+                data={selectedNodes.NodeData};
+                names=cellfun(@(x) {x.name},data,'UniformOutput',false);
+                
+                [names_tot, ia, ic] = unique([names{:}],'stable');
+                if app.SharedVariablesOnlyCheckBox.Value
+                    disp('this is going to be implemented later bro')
+                end
+                sizes = cellfun(@(nm,d) {d(index_B(names_tot,nm)).size}, names, data,'UniformOutput',0);
+                sizes_tot = cell(length(names_tot),1);
+                [sizes_tot{:}]=deal({});
+                jj = cellfun(@(nm) index_A(names_tot,nm), names, 'UniformOutput',0);
+                for i = 1:size(selectedNodes,1)
+                    for k=1:length(jj{i})
+                        sizes_tot{jj{i}(k)}{end+1}=mat2str(sizes{i}{k});
+                    end
+                end
+                sizes_tot = cellfun(@(sz) strjoin(unique(sz,'stable'), newline),sizes_tot,'UniformOutput',false);
+                
+                
+                plot_flag = false(size(sizes_tot));
+                old_data  = app.ResultsVariableTable.Data;
+                if ~isempty(old_data)
+                    
+                    [~,i_intersect,i_old]=intersect(names_tot',old_data.Var1);
+                    plot_flag(i_old)=old_data.plot_flag(i_intersect);
+                end
+                app.ResultsVariableTable.Data=table(names_tot', sizes_tot, plot_flag);
+            else
+                app.ResultsVariableTable.Data=[];
+                
             end
-            app.ResultsVariableTable.Data=table(names_tot', sizes_tot, plot_flag);
         end
 
         % Button pushed function: OpenDirectoryButton
@@ -416,17 +422,15 @@ classdef RD_lab < matlab.apps.AppBase
 
         % Value changed function: ModelSpecificationTextArea
         function ModelSpecificationTextAreaValueChanged(app, event)
-            disp('model changed')
-            if app.ModelSpecificationTextArea.Editable
-                disp('ya boi was editable')
+            if ~app.SaveChangesButton.Enable
                 app.SaveChangesButton.Enable=true;
             end
         end
 
         % Button pushed function: SaveChangesButton
         function SaveChangesButtonPushed(app, event)
-            app.saveModelText()
             app.SaveChangesButton.Enable=false;
+            app.saveModelText()
         end
     end
 
@@ -492,6 +496,11 @@ classdef RD_lab < matlab.apps.AppBase
             app.OpenDirectoryButton.Enable = 'off';
             app.OpenDirectoryButton.Position = [616 398 100 22];
             app.OpenDirectoryButton.Text = 'Open Directory';
+
+            % Create SaveonDeployCheckBox
+            app.SaveonDeployCheckBox = uicheckbox(app.ModelTab);
+            app.SaveonDeployCheckBox.Text = 'Save on Deploy';
+            app.SaveonDeployCheckBox.Position = [465 367 107 22];
 
             % Create ProtocolTab
             app.ProtocolTab = uitab(app.TabGroup);
