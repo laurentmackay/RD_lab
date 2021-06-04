@@ -1,7 +1,7 @@
-N=1e3;
+N=2e2;
 dt=0.01;
 Q=1;
-t_plot=0.1;
+t_plot=1;
 
 
 
@@ -77,7 +77,7 @@ sigma=0.15;
 mag=1;
 
 bndry=[a a+P];
-
+n_hat=-repmat([1;-1],size(bndry,2),1);
 
 i_bndry = ceil(bndry/h)+[0; 1];
 
@@ -99,13 +99,7 @@ while t<1e3 && a+P<Q
     
     %     dt=dt0;
     %     nu_for=v*dt/h
-    for i_ = find(sign(V_prev)~=sign(V))
-        f0_star = (f0_for+f0)/2-(sign(V(i_)).*(f0_for-f0))/2;
-        %         f0_star = (u_for - u_back)/2;
-        %         f0_star_back = f0_star(jump(:,2),:);
-        %         f0_star_back(1,:)=f0_star_back(2,:);
-        %         dudt0_adv{i_}=-(f0_star - f0_star(jump(:,2),:));
-    end
+
     
     eval_Rx
     Rx(:,2)=Rx(:,2)+mag*exp(-((x-Q/2).^2)/(sigma)^2);
@@ -135,7 +129,16 @@ while t<1e3 && a+P<Q
     % %         dt=min(dt,0.05/max(1/(abs(dudt{i_})+1e-4)))
     %          end
     %          h_local = repmat(h,N,1);
+    f0_star = (f0_for+f0)/2-(sign(V(i_)).*(f0_for-f0))/2;
     f1_star=f0_star;
+    
+    for i_ = find(sign(V_prev)~=sign(V))
+        
+        %         f0_star = (u_for - u_back)/2;
+        %         f0_star_back = f0_star(jump(:,2),:);
+        %         f0_star_back(1,:)=f0_star_back(2,:);
+        %         dudt0_adv{i_}=-(f0_star - f0_star(jump(:,2),:));
+    end
     f1_star_next=f0_star;
     f1_star_half_next=f0_star;
     
@@ -176,23 +179,36 @@ while t<1e3 && a+P<Q
     u_prev=u;
     Rx_prev=Rx;
     stencil=2;
-
+    implicit_BC=0;
     for i_=1:N_species
-        
+        i_bndry_flux=i_bndry(1,:)+[-1; 1];
+        j_bndry_flux=i_bndry(:);%repmat(i_bndry(1,:),[length(bndry),1]);
+        dh=h_local_half_next(j_bndry_flux(:))-h_local(j_bndry_flux(:));
+%         if any(dh~=0) && V_prev(i_)~=0
+%             f1_star(i_bndry_flux(:),:)=f1_star(i_bndry_flux(:),:)-eye(j_bndry_flux,:).*dh.*n_hat/(V_prev(i_));
+%         end
+        f1_star(i_bndry(1,:),:)=0;
         A_ = -(f1_star - f1_star(jump(:,2),:))*V_prev(i_);
         %              A_next_ = -(f1_star_next - f1_star_next(jump(:,2),:))*V(i_);
+        i_bndry_flux=i_bndry_half_next(1,:)+[-1; 1];
+        j_bndry_flux=i_bndry_half_next(:);%repmat(i_bndry_half_next(1,:),[1,size(i_bndry_half_next,2)]);
+        dh=h_local_half_next(j_bndry_flux(:))-h_local(j_bndry_flux(:));
+%         if any(dh~=0) && V(i_)~=0
+%             f1_star_half_next(i_bndry_flux(:),:)=f1_star_half_next(i_bndry_flux(:),:)-eye(j_bndry_flux,:).*dh.*n_hat/(abs(V(i_)));
+%         end
+        f1_star_half_next(i_bndry_half_next(1,:),:)=0;
         A_next_ = -(f1_star_half_next - f1_star_half_next(jump(:,2),:))*V(i_);
         M_=(eye.*h_local_half_next-A_next_*dt/4);
-        b_ = ((eye.*h_local+A_*dt/4)*u(:,i_)+Rx(:,i_)*(dt/2).*h_local);
+        b_ = ((eye.*h_local+A_*dt/4)*u(:,i_)+Rx_prev(:,i_)*(dt/2).*h_local);
         
-        
+        if implicit_BC
         inds_back = cell2mat(arrayfun(@(i) i-(stencil):i,i_bndry(1,:)','UniformOutput',false));
         inds_back_next = cell2mat(arrayfun(@(i) i-(stencil):i,i_bndry_half_next(1,:)','UniformOutput',false));
         
-        inds_for = cell2mat(arrayfun(@(i) i+1:i+(stencil),i_bndry(1,:)','UniformOutput',false));
-        inds_for_next = cell2mat(arrayfun(@(i) i+1:i+(stencil),i_bndry_half_next(1,:)','UniformOutput',false));
-        J_back = f0_star(inds_back(:,1)-1,:)*u_prev(:,i_)*V(i_);
-        J_for = f0_star(inds_for(:,end),:)*u_prev(:,i_)*V(i_);
+        inds_for = cell2mat(arrayfun(@(i) i:i+(stencil-1),i_bndry(2,:)','UniformOutput',false));
+        inds_for_next = cell2mat(arrayfun(@(i) i:i+(stencil-1),i_bndry_half_next(2,:)','UniformOutput',false));
+        J_back = f1_star(inds_back(:,1)-1,:)*u_prev(:,i_)*V(i_)*h;
+        J_for = f1_star(inds_for(:,end),:)*u_prev(:,i_)*V(i_)*h;
         for j_=1:size(inds_back,1)
             inds=inds_back(j_,:);
             inds_next=inds_back_next(j_,:);
@@ -200,7 +216,7 @@ while t<1e3 && a+P<Q
             M_(inds_next(end),:)=0;
             M_(inds_next(end),inds_next)=h_local_next(inds_next);
             %                     b_(inds_next(end))=sum((u_prev(inds,i_)+Rx_prev(inds,i_)*dt/2).*h_local(inds) + Rx(inds_next,i_)*(dt/2).*h_local_next(inds_next)+J_back(j_)*dt*h);
-            b_(inds_next(end))=sum((u_prev(inds,i_)+Rx_prev(inds,i_)*dt/2).*h_local(inds));
+            b_(inds_next(end))=sum((u_prev(inds,i_)+Rx_prev(inds,i_)*dt/2).*h_local(inds))+J_back(j_)*dt;
 %             b_bndry_back
             
             %                     b_(inds_next(end))=sum((u_prev(inds,i_)).*h_local(inds) );
@@ -211,9 +227,9 @@ while t<1e3 && a+P<Q
             M_(inds_next(1),:)=0;
             M_(inds_next(1),inds_next)=h_local_next(inds_next);
             %                     b_(inds_next(1))=sum((u_prev(inds,i_)+Rx_prev(inds,i_)*dt/2).*h_local(inds) + Rx(inds_next,i_)*(dt/2).*h_local_next(inds_next)-J_for(j_)*dt*h);
-            b_(inds_next(1))=sum((u_prev(inds,i_)+Rx_prev(inds,i_)*dt/2).*h_local(inds));
+            b_(inds_next(1))=sum((u_prev(inds,i_)+Rx_prev(inds,i_)*dt/2).*h_local(inds))-J_for(j_)*dt;
         end
-        
+    end
         
         
         
@@ -221,17 +237,22 @@ while t<1e3 && a+P<Q
         
         if u(i_bndry_half_next(1),1)~=0
             j_=1;
+            if implicit_BC
             inds=inds_back(j_,:);
             inds_next=inds_back_next(j_,:);
+            end
             disp('this is not going to go well, half step')
         end
         
         if u(i_bndry_half_next(1,2)+1,1)~=0
             j_=2;
+            if implicit_BC
             inds=inds_for(j_,:);
             inds_next=inds_for_next(j_,:);
+            end
             disp('this is not going to go well, half step')
         end
+        
         %             u(:,i_) = u(:,i_) + dudt{i_}*dt;
     end
     
@@ -246,7 +267,7 @@ while t<1e3 && a+P<Q
     %           end
 
     
-
+    eval_model
     
     eval_model_implicit
     eval_aux_model
@@ -262,6 +283,22 @@ while t<1e3 && a+P<Q
     u_half=u;
     for i_=1:N_species
         
+         for j_=1:size(i_bndry,2)
+         
+         end
+         
+         
+        i_bndry_flux=i_bndry_next(1,:)+[-1; 1];
+        j_bndry_flux=i_bndry_next(:);%repmat(i_bndry_half_next(1,:),[1,size(i_bndry_next,2)]);
+        dh=h_local_next(j_bndry_flux(:))-h_local(j_bndry_flux(:));
+        f1_star_next(i_bndry_next(1,:),:)=0;
+%         if any(dh~=0) && V(i_)~=0
+%             f1_star_next(i_bndry_flux(:),:)=f1_star_next(i_bndry_flux(:),:)-eye(j_bndry_flux(:),:).*dh.*n_hat/(abs(V(i_)));
+%         end
+        
+        
+
+        
         A_ = -(f1_star - f1_star(jump(:,2),:))*V_prev(i_);
         A_next_ = -(f1_star_next - f1_star_next(jump(:,2),:))*V(i_);
         %              A_next_ = -(f1_star_half_next - f1_star_half_next(jump(:,2),:))*V(i_);
@@ -269,19 +306,17 @@ while t<1e3 && a+P<Q
         b_= ((eye.*h_local+A_*dt/2)*u_prev(:,i_)+Rx(:,i_)*dt.*h_local);
         
         
-        
-        %                 inds_back = (i_bndry(1,1)-3):(i_bndry(1,1)-1);
-        %                 inds_back_next = (i_bndry_next(1,1)-3):(i_bndry_next(1,1)-1);
-        
+        if implicit_BC
+
         inds_back = cell2mat(arrayfun(@(i) i-(stencil-1):i,i_bndry(1,:)','UniformOutput',false));
         inds_back_next = cell2mat(arrayfun(@(i) i-(stencil-1):i,i_bndry_next(1,:)','UniformOutput',false));
         inds_back_half_next = cell2mat(arrayfun(@(i) i-(stencil-1):i,i_bndry_half_next(1,:)','UniformOutput',false));
         
-        inds_for = cell2mat(arrayfun(@(i) i+1:i+(stencil),i_bndry(1,:)','UniformOutput',false));
-        inds_for_next = cell2mat(arrayfun(@(i) i+1:i+(stencil),i_bndry_next(1,:)','UniformOutput',false));
-        inds_for_half_next = cell2mat(arrayfun(@(i) i+1:i+(stencil),i_bndry_half_next(1,:)','UniformOutput',false));
-        J_back = f0_star(inds_back(:,1)-1,:)*u_prev(:,i_)*V(i_);
-        J_for = f0_star(inds_for(:,end),:)*u_prev(:,i_)*V(i_);
+        inds_for = cell2mat(arrayfun(@(i) i:i+(stencil-1),i_bndry(2,:)','UniformOutput',false));
+        inds_for_next = cell2mat(arrayfun(@(i) i:i+(stencil-1),i_bndry_next(2,:)','UniformOutput',false));
+        inds_for_half_next = cell2mat(arrayfun(@(i) i:i+(stencil-1),i_bndry_half_next(2,:)','UniformOutput',false));
+        J_back = f1_star(inds_back(:,1)-1,:)*u_prev(:,i_)*V_prev(i_)*h;
+        J_for = f1_star(inds_for(:,end),:)*u_prev(:,i_)*V_prev(i_)*h;
         for j_=1:size(inds_back,1)
             inds=inds_back(j_,:);
             inds_next=inds_back_next(j_,:);
@@ -289,9 +324,9 @@ while t<1e3 && a+P<Q
             M_(inds_next(end),:)=0;
             M_(inds_next(end),inds_next)=h_local_next(inds_next);
             
-            %                     [-1 4 -5 2]/h^2
-            b_(inds_next(end))=sum((u_prev(inds,i_)+Rx(inds_half_next,i_)*dt).*h_local(inds));
-            %                     b_(inds_next(end))=sum((u_prev(inds,i_)).*h_local(inds) );
+%                                 [-1 4 -5 2]/h^2
+            b_(inds_next(end))=sum((u_prev(inds,i_)+Rx(inds_half_next,i_)*dt).*h_local(inds))+J_back(j_)*dt;
+%                                 b_(inds_next(end))=sum((u_prev(inds,i_)).*h_local(inds) );
             
             
             inds=inds_for(j_,:);
@@ -300,30 +335,32 @@ while t<1e3 && a+P<Q
             M_(inds_next(1),:)=0;
             M_(inds_next(1),inds_next)=h_local_next(inds_next);
             %                     b_(inds_next(1))=sum((u_prev(inds,i_)+Rx_prev(inds,i_)*dt).*h_local(inds) + Rx(inds_next,i_)*(dt/2).*h_local_next(inds_next)-J_for(j_)*dt*h);
-            b_(inds_next(1))=sum((u_prev(inds,i_)+Rx(inds_half_next,i_)*dt).*h_local(inds));
+            b_(inds_next(1))=sum((u_prev(inds,i_)+Rx(inds_half_next,i_)*dt).*h_local(inds))-J_for(j_)*dt;
         end
-        %                 inds_for = (i_bndry(1,1)):(i_bndry(1,1)+3);
-        %                 inds_for_next = (i_bndry_next(1,1)):(i_bndry_next(1,1)+3);
-        
-        %                 b_(inds_for_next(1))=sum((u_prev(inds_for,i_)+(Rx_prev(inds_for,i_))*dt/2).*h_local(inds_for)+Rx(inds_for_next,i_)*(dt/2).*h_local_next(inds_for_next));
-        %                 M_(inds_for_next(1),:)=0;
-        %                 M_(inds_for_next(1),inds_for_next)=h_local_next(inds_for_next);
+        end
         
         u(:,i_)=M_\b_;
+        
+        
         if u(i_bndry_next(1))~=0
             j_=1;
+            if implicit_BC
             inds=inds_back(j_,:);
             inds_next=inds_back_next(j_,:);
             inds_half_next=inds_back_half_next(j_,:);
+            end
             disp('this is not going to go well')
         end
         
         if u(i_bndry_next(1,2)+1)~=0
             j_=2;
+            if implicit_BC
             inds=inds_for(j_,:);
             inds_next=inds_for_next(j_,:);
+            end
             disp('this is not going to go well')
         end
+        
         %             u(:,i_) = u(:,i_) + dudt{i_}*dt;
     end
     v_cell

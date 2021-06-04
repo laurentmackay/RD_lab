@@ -1362,6 +1362,7 @@ syms(aux_vars2{:},'t_')
 
 f_aux = regexprep(aux_dyn,aux_ref ,aux_rep);
 
+subs(diff(subs(str2sym(bndrys{1}),str2sym(aux_vars),str2sym(aux_vars2)),t_),[str2sym(aux_vars2) cellfun(@(x) diff(str2sym(x),t_),aux_vars2)],[str2sym(aux_vars) str2sym(f_aux)])
 
 
 fid=fopen(strcat(save_dir,filesep,'eval_aux_model.m'),'w');
@@ -1372,19 +1373,6 @@ fclose(fid);
 clear eval_aux_model
 
 
-%computing boundary velocities
-bndrys_sym=cellfun(@(x) subs(str2sym(x),str2sym(model_vars),str2sym(model_var_defs)),bndrys,'UniformOutput',0);
-bndry_vel = cellfun(@(x) subs(diff(subs(x,str2sym(aux_vars),str2sym(aux_vars2)),t_),[str2sym(aux_vars2) cellfun(@(x) diff(str2sym(x),t_),aux_vars2)],[str2sym(aux_vars) str2sym(f_aux)]),bndrys_sym,'UniformOutput',0);
-fid=fopen(strcat(save_dir,filesep,'eval_bndrys.m'),'w');
-
-
-fwrite(fid,[['bndrys={' strjoin(cellfun(@(x) [ '[' char(strjoin(string(x),', ')) ']'],bndrys,'UniformOutput',false),',') '};' newline]...
-['bndry_flux={' strjoin(cellfun(@(x) [ '[' char(strjoin(string(x),', ')) ']'],bndry_flux,'UniformOutput',false),',') '};' newline]...
-['bndry_vel={' strjoin(cellfun(@(x) [ '[' char(strjoin(string(x),', ')) ']'],bndry_vel,'UniformOutput',false),',') '};' newline]],'char');
-
-fclose(fid);
-
-clear eval_bndrys
 
 if simp
     rxn_body_slow = [strjoin([model_defs'; rates_slow'; sigma__reps'; sigma2__reps';],[';' newline])...
@@ -1672,7 +1660,7 @@ init_vals = double(subs(init_sym(~ismissing(init)),str2sym(model_pars_tot),str2s
 % init_vals = eval(strcat("[",strjoin(regexprep(string(init_vals),par_refs,par_reps)),"]"));
 
 fid=fopen(strcat(save_dir,filesep,'model_ic.m'),'w');
-fwrite(fid,strcat("ic = [", strjoin(string(init_vals)), "];",string(newline), 'aux_ic =[',strjoin(init_aux),'];'),'char');
+fwrite(fid,strcat("ic = [", strjoin(string(init_vals)), "];"),'char');
 fclose(fid);
 
 clear rhs_fun model_ic model_params

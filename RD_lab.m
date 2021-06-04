@@ -213,8 +213,13 @@ classdef RD_lab < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            global RD_base
+
             p=mfilename('fullpath');
-            addpath(strcat(regexprep(p,[  '\' filesep '[^\' filesep ']+$'],''),filesep,'lib'));
+            p=regexprep(p,[  '\' filesep '[^\' filesep ']+$'],'');
+            RD_base=strcat(p,filesep);
+            
+            addpath(strcat(p,filesep,'lib'));
             app.FilenameEditField.Enable=0;
             app.SaveResultsCheckBox.Enable=0;
             

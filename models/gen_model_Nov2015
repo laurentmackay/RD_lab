@@ -10,7 +10,7 @@ param *=1
 param P=0.15, c=1, gamma_L=1, Q=1
 
 da/dt = v_cell
-
+b=a+P
 
 L(0)=1
 Ru(0)=Rb(0)=0
@@ -18,6 +18,10 @@ Du(0)=Db(0)=0
 a(0)=0.1
 
 D(L)=gamma_L
+
+Flux(Rb(x=a))=Flux(Rb(x=b))=0
+
+Flux(Ru(x=a))=Flux(Ru(x=b))=0
 
 in_cell = x>=a & x<=(a+P)
 front = x>=a+P/2 & x<=a+P

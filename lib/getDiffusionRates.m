@@ -11,7 +11,7 @@ str=regexprep(str,'function[^\=]+\=[^\=]+\)',""); %remove function definition
 name='[a-zA-Z_$][a-zA-Z_$0-9\-]*';
 
 
-str=strjoin(regexp(str,['[^\n]*D\(' name '\)[^\n\;]*(\n|\;)'],"match"),newline);
+str=strjoin(regexp(str,['[^\n]*D\(' name '\)[^\n\;]*(\n|\;|$)'],"match"),newline);
 
 
 N=length(chems);

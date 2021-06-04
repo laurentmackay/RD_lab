@@ -12,7 +12,7 @@ name='[a-zA-Z_$][a-zA-Z_$0-9\-]*';
 
 code=' \t\f\*\+\-\/\,\=\(\)\[\]\>\<\&\~\;\:\|\{\}\^\.';
 
-str=strjoin(regexp(str,['[^\n]*V\(' name '\)[^\n\;]*(\n|\;)'],"match"),newline);
+str=strjoin(regexp(str,['[^\n]*V\(' name '\)[^\n\;]*(\n|\;|$)'],"match"),newline);
 
 
 N=length(chems);
@@ -21,7 +21,7 @@ V=cellstr(V);
 wtv=['0-9A-Za-z_$' code];
 for i=1:N
     chem=chems{i};
-    Vstr=regexp(str,['V\(' chem '\)[ \t\f]*=(?:[^\r\n\;]*=)?([' wtv '])+[ \t\f]*[\r\n\;]'],'tokens');
+    Vstr=regexp(str,['V\(' chem '\)[ \t\f]*=(?:[^\r\n\;]*=)?([' wtv '])+[ \t\f]*(?:[\r\n\;]|$)'],'tokens');
     if ~isempty(Vstr)
         V{i}=Vstr{1}{1};
     end
